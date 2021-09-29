@@ -1,0 +1,12 @@
+version: '1.0'
+
+services:
+  database:
+    image: postgres:10.18-alpine
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_DB: ${DB_NAME}
+    ports:
+      - "5432:5432"
