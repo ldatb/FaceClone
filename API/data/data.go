@@ -5,10 +5,10 @@ import (
 	"log"
 	"os"
 
-	"faceclone-api/data/entities"
+	"faceclone-api/data/models"
 
-	"github.com/gofiber/storage/postgres"
 	"github.com/gofiber/fiber/v2/middleware/session"
+	"github.com/gofiber/storage/postgres"
 	"github.com/joho/godotenv"
 	"xorm.io/xorm"
 )
@@ -37,7 +37,12 @@ func CreateDBEngine() (*xorm.Engine, error) {
 	}
 
 	// Sync the User struct and the database
-	if err := engine.Sync(new(entities.User)); err != nil {
+	if err := engine.Sync(new(models.User)); err != nil {
+		return nil, err
+	}
+
+	// Sync the OAuth struct and the database
+	if err := engine.Sync(new(models.AuthAccess)); err != nil {
 		return nil, err
 	}
 	
