@@ -1,21 +1,19 @@
 package data
 
 import (
+	"fmt"
 	"log"
 	"os"
-	"fmt"
 
+	"faceclone-api/data/entities"
+
+	"github.com/gofiber/storage/postgres"
+	"github.com/gofiber/fiber/v2/middleware/session"
 	"github.com/joho/godotenv"
 	"xorm.io/xorm"
 )
 
-type User struct {
-	Id 		 int64
-	Name 	 string
-	Email 	 string
-	Password string `json:"-"`
-}
-
+/* User Database */
 func CreateDBEngine() (*xorm.Engine, error) {
 	// Load .env file with secrets
 	err := godotenv.Load()
@@ -39,9 +37,35 @@ func CreateDBEngine() (*xorm.Engine, error) {
 	}
 
 	// Sync the User struct and the database
-	if err := engine.Sync(new(User)); err != nil {
+	if err := engine.Sync(new(entities.User)); err != nil {
 		return nil, err
 	}
 	
 	return engine, nil
+}
+
+/* Session storage stores user session JWT */
+func CreateStore() (*session.Store) {
+	// Load .env file with secrets
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+	DB_User := os.Getenv("DB_USER")
+	DB_Pass := os.Getenv("DB_PASSWORD")
+	DB_Name := os.Getenv("DB_NAME")
+
+	// Create storage
+	storage := postgres.New(postgres.Config{
+		Host: "localhost",
+		Username: DB_User,
+		Password: DB_Pass,
+		Port: 5432,
+		Database: DB_Name,
+		Table: "session_storage",
+	})
+
+	store := session.New(session.Config{Storage: storage})
+
+	return store
 }
