@@ -10,6 +10,7 @@ require (
 	github.com/joho/godotenv v1.4.0
 	github.com/lib/pq v1.10.3
 	golang.org/x/crypto v0.0.0-20210921155107-089bfa567519
+	gopkg.in/gomail.v2 v2.0.0-20160411212932-81ebce5c23df
 	xorm.io/xorm v1.2.5
 )
 
@@ -29,6 +30,7 @@ require (
 	github.com/valyala/tcplisten v1.0.0 // indirect
 	golang.org/x/sys v0.0.0-20210927094055-39ccf1dd6fa6 // indirect
 	golang.org/x/tools v0.1.5 // indirect
+	gopkg.in/alexcesaro/quotedprintable.v3 v3.0.0-20150716171945-2caba252f4dc // indirect
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
 	xorm.io/builder v0.3.9 // indirect
 )
