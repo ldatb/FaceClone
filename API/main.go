@@ -2,7 +2,7 @@ package main
 
 import (
 	"faceclone-api/data"
-	"faceclone-api/routes"
+	"faceclone-api/router"
 	"fmt"
 	"log"
 
@@ -15,14 +15,14 @@ import (
 func private(c *fiber.Ctx) error {
 	return c.JSON(fiber.Map{
 		"success": true,
-		"path": "private",
+		"path":    "private",
 	})
 }
 
 func public(c *fiber.Ctx) error {
 	return c.JSON(fiber.Map{
 		"success": true,
-		"path": "public",
+		"path":    "public",
 	})
 }
 
@@ -43,9 +43,9 @@ func main() {
 	// Store user session
 	store := data.CreateStore()
 
-	// Routes
+	// Routes and groups
 	api := app.Group("/api")
-	routes.UserAuthRouter(api, *store)
+	router.UserAuthRouter(api, *store)
 
 	privateAPI := app.Group("/private")
 	privateAPI.Use(jwtware.New(jwtware.Config{
@@ -55,6 +55,11 @@ func main() {
 
 	publicApp := app.Group("/public")
 	publicApp.Get("/", public)
+
+	// 404 Handler
+	app.Use(func(c *fiber.Ctx) error {
+		return c.SendStatus(404)
+	})
 
 	// Fiber listen
 	log.Fatal(app.Listen(":3000"))
