@@ -21,7 +21,7 @@ func UserAuthRouter(app fiber.Router, store session.Store) {
 
 /* This functions creates a JSON Web Token to validate the user login */
 func createJWT(user entities.User) (string, int64, error) {
-	expiration := time.Now().Add(time.Hour * 24 * 30).Unix()
+	expiration := time.Now().Add(time.Hour).Unix()
 	token := jwt.New(jwt.SigningMethodHS256)
 	claims := token.Claims.(jwt.MapClaims)
 
@@ -58,9 +58,9 @@ func storeSession(c *fiber.Ctx, store session.Store, email string, token string)
 
 /* This functions registers and connects an user to the database */
 type RegisterRequest struct {
-	Name string
-	Email string
-	Password string
+	Name 		string
+	Email 		string
+	Password 	string
 }
 func register(store session.Store) fiber.Handler {
 	return func(c *fiber.Ctx) error {
@@ -122,9 +122,9 @@ func register(store session.Store) fiber.Handler {
 
 /* This function connects a user to the database */
 type LoginRequest struct {
-	Name string
-	Email string
-	Password string
+	Name 		string
+	Email 		string
+	Password 	string
 }
 func login(store session.Store) fiber.Handler {
 	return func(c *fiber.Ctx) error {
