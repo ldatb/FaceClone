@@ -2,16 +2,17 @@ package main
 
 import (
 	"faceclone-api/data"
-	"faceclone-api/router"
+	"faceclone-api/router/API"
 	"fmt"
 	"log"
 
 	"github.com/gofiber/fiber/v2"
-	jwtware "github.com/gofiber/jwt/v3"
+	//jwtware "github.com/gofiber/jwt/v3"
 	_ "github.com/lib/pq"
 )
 
-/* Private request to when a user is logged in, requires access token to enter */
+/* NOT USING YET
+/* Private request to when a user is logged in, requires access token to enter 
 func private(c *fiber.Ctx) error {
 	return c.JSON(fiber.Map{
 		"success": true,
@@ -25,6 +26,7 @@ func public(c *fiber.Ctx) error {
 		"path":    "public",
 	})
 }
+NOT USING YET */
 
 func main() {
 	// Try a connection to the database
@@ -45,8 +47,10 @@ func main() {
 
 	// Routes and groups
 	api := app.Group("/api")
-	router.UserAuthRouter(api, *store)
+	API_router.UserAuthRouter(api, *store)
+	API_router.UserChangesRouter(api, *store)
 
+	/* NOT USING YET
 	privateAPI := app.Group("/private")
 	privateAPI.Use(jwtware.New(jwtware.Config{
 		SigningKey: []byte("secret"),
@@ -55,6 +59,7 @@ func main() {
 
 	publicApp := app.Group("/public")
 	publicApp.Get("/", public)
+	NOT USING YET */
 
 	// 404 Handler
 	app.Use(func(c *fiber.Ctx) error {
