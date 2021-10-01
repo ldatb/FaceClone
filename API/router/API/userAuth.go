@@ -174,7 +174,7 @@ func register(store session.Store) fiber.Handler {
 
 type ValidadeRequest struct {
 	Email string
-	Token string
+	AuthKey string
 }
 
 /* This function validates the register of an user */
@@ -188,7 +188,7 @@ func validate() fiber.Handler {
 		}
 
 		// Not enough values given
-		if request.Email == "" || request.Token == "" {
+		if request.Email == "" || request.AuthKey == "" {
 			return fiber.NewError(fiber.StatusBadRequest, "invalid credentials")
 		}
 
@@ -202,12 +202,12 @@ func validate() fiber.Handler {
 		}
 
 		// Validate
-		validation, err := utils.ValidateAuthKey(request.Email, request.Token)
+		validation, err := utils.ValidateAuthKey(request.Email, request.AuthKey)
 		if err != nil {
 			return fiber.NewError(fiber.StatusBadRequest, "database error")
 		}
 		if !validation {
-			return fiber.NewError(fiber.StatusBadRequest, "invalid token")
+			return fiber.NewError(fiber.StatusBadRequest, "invalid key")
 		}
 
 		// Get id
@@ -225,7 +225,6 @@ func validate() fiber.Handler {
 }
 
 type LoginRequest struct {
-	Name     string
 	Email    string
 	Password string
 }
@@ -284,7 +283,6 @@ func login(store session.Store) fiber.Handler {
 
 type LogoutRequest struct {
 	Email string
-	Token string
 }
 
 /* This function connects a user to the database */
@@ -298,9 +296,12 @@ func logout(store session.Store) fiber.Handler {
 		}
 
 		// Not enough values given
-		if request.Email == "" || request.Token == "" {
+		if request.Email == "" {
 			return fiber.NewError(fiber.StatusBadRequest, "invalid credentials")
 		}
+
+		// Check token in header
+		token := c.Get("access_token")
 
 		// Check if user exists
 		userExist, _, _, err := utils.CheckUser(request.Email)
@@ -312,7 +313,7 @@ func logout(store session.Store) fiber.Handler {
 		}
 
 		// Check if token is correct
-		checkToken, sess, err := utils.CheckToken(store, c, request.Email, request.Token)
+		checkToken, sess, err := utils.CheckToken(store, c, request.Email, token)
 		if err != nil {
 			return fiber.NewError(fiber.StatusInternalServerError, "database error")
 		}

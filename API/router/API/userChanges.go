@@ -17,9 +17,9 @@ import (
 
 func UserChangesRouter(app fiber.Router, store session.Store) {
 	app.Post("/forgot-password", forgot_password())
-	app.Post("/change-forgot-password", change_forgot_password(store))
-	app.Post("/change-password", change_password(store))
-	app.Post("/change-name", change_name(store))
+	app.Put("/change-forgot-password", change_forgot_password(store))
+	app.Put("/change-password", change_password(store))
+	app.Put("/change-name", change_name(store))
 }
 
 type ForgotPasswordRequest struct {
@@ -159,7 +159,6 @@ func change_forgot_password(store session.Store) fiber.Handler {
 
 type ChangePasswordRequest struct {
 	Email        string
-	Token        string
 	Old_Password string
 	New_Password string
 }
@@ -175,12 +174,15 @@ func change_password(store session.Store) fiber.Handler {
 		}
 
 		// Not enough values given
-		if request.Email == "" || request.Token == "" || request.Old_Password == "" || request.New_Password == "" {
-			return fiber.NewError(fiber.StatusBadRequest, "invalid validation credentials")
+		if request.Email == "" || request.Old_Password == "" || request.New_Password == "" {
+			return fiber.NewError(fiber.StatusBadRequest, "invalid credentials")
 		}
 
+		// Check token in header
+		token := c.Get("access_token")
+
 		// Check if user exists, password and token are correct
-		checkUser, checkPass, checkToken, userRequest, DBengine, _, err := utils.CheckAll(request.Email, request.Old_Password, request.Token, store, c)
+		checkUser, checkPass, checkToken, userRequest, DBengine, _, err := utils.CheckAll(request.Email, request.Old_Password, token, store, c)
 		if err != nil {
 			return fiber.NewError(fiber.StatusInternalServerError, "database error")
 		}
@@ -215,7 +217,6 @@ func change_password(store session.Store) fiber.Handler {
 type ChangeNameRequest struct {
 	Email        string
 	Password     string
-	Token        string
 	New_Name     string
 	New_LastName string
 }
@@ -231,12 +232,15 @@ func change_name(store session.Store) fiber.Handler {
 		}
 
 		// Not enough values given
-		if request.Email == "" || request.Password == "" || request.Token == "" || request.New_Name == "" || request.New_LastName == "" {
+		if request.Email == "" || request.Password == "" || request.New_Name == "" || request.New_LastName == "" {
 			return fiber.NewError(fiber.StatusBadRequest, "invalid credentials")
 		}
 
+		// Get token in header
+		token := c.Get("access_token")
+
 		// Check if user exists, password and token are correct
-		checkUser, checkPass, checkToken, userRequest, DBengine, _, err := utils.CheckAll(request.Email, request.Password, request.Token, store, c)
+		checkUser, checkPass, checkToken, userRequest, DBengine, _, err := utils.CheckAll(request.Email, request.Password, token, store, c)
 		if err != nil {
 			return fiber.NewError(fiber.StatusInternalServerError, "database error")
 		}
