@@ -20,6 +20,8 @@ func UserChangesRouter(app fiber.Router, store session.Store) {
 	app.Put("/change-forgot-password", change_forgot_password(store))
 	app.Put("/change-password", change_password(store))
 	app.Put("/change-name", change_name(store))
+	app.Put("/change-avatar", change_avatar(store))
+	app.Delete("/delete-avatar", delete_avatar(store))
 }
 
 type ForgotPasswordRequest struct {
@@ -303,6 +305,189 @@ func change_name(store session.Store) fiber.Handler {
 
 		return c.Status(fiber.StatusOK).JSON(fiber.Map{
 			"user": userRequest,
+		})
+	}
+}
+
+
+/* This function changes an user avatar */
+func change_avatar(store session.Store) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		form, err := c.MultipartForm()
+		if err != nil {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+				"error": "failed getting credentials",
+			})
+		}
+
+		// Get user id
+		email_form := form.Value["email"]
+		if len(email_form) <= 0 {
+			return c.Status(fiber.StatusPartialContent).JSON(fiber.Map{
+				"error": "invalid credentials",
+			})
+		}
+		email := email_form[0]
+
+		// Get token in header
+		token := c.Get("access_token")
+
+		// Check if user exists
+		userExist, _, _, err := utils.CheckUser(email)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"error": "database error",
+			})
+		}
+		if !userExist {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+				"error": "invalid user",
+			})
+		}
+
+		// Check if user exists
+		userExist, userRequest, DBengine, err := utils.CheckUser(email)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"error": "database error",
+			})
+		}
+		if !userExist {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+				"error": "invalid user",
+			})
+		}
+		
+		// Check if token is correct
+		checkToken, _, err := utils.CheckToken(store, c, email, token)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"error": "database error",
+			})
+		}
+		if !checkToken {
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+				"error": "invalid token",
+			})
+		}
+
+		// Get avatar from request
+		avatar, err := c.FormFile("avatar")
+		if err != nil {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+				"error": "invalid image",
+			})
+		}
+
+		// Save file
+		c.SaveFile(avatar, fmt.Sprintf("./data/files/avatar/%s", avatar.Filename))
+
+		// Get user_avatar instance in database
+		userAvatarRequest := new(models.UserAvatar)
+		has, err := DBengine.Table("user_avatar").Where("owner_id = ?", userRequest.Id).Desc("id").Get(userAvatarRequest)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"error": "database error",
+			})
+		}
+		if !has {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+				"error": "invalid user avatar",
+			})
+		}
+
+		// Update user_avatar in database
+		userAvatarRequest.FileName = avatar.Filename
+		_, err = DBengine.ID(userAvatarRequest.Id).Cols("file_name").Update(userAvatarRequest)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"error": "database error",
+			})
+		}
+
+		return c.Status(fiber.StatusOK).JSON(fiber.Map{
+			"user": userRequest,
+			"user_avatar": userAvatarRequest,
+		})
+	}
+}
+
+type DeleteAvatarRequest struct {
+	Email        string
+}
+
+/* This function deletes an user avatar and sets it to the base one */
+func delete_avatar(store session.Store) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		// Get request
+		request := new(DeleteAvatarRequest)
+
+		if err := c.BodyParser(request); err != nil {
+			return err
+		}
+
+		// Not enough values given
+		if request.Email == "" {
+			return c.Status(fiber.StatusPartialContent).JSON(fiber.Map{
+				"error": "invalid credentials",
+			})
+		}
+
+		// Check if user exists
+		userExist, userRequest, DBengine, err := utils.CheckUser(request.Email)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"error": "database error",
+			})
+		}
+		if !userExist {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+				"error": "invalid user",
+			})
+		}
+
+		// Get token in header
+		token := c.Get("access_token")
+
+		// Check if token is valid
+		checkToken, _, err := utils.CheckToken(store, c, request.Email, token)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"error": "database error",
+			})
+		}
+		if !checkToken {
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+				"error": "invalid token",
+			})
+		}
+
+		// Get user_avatar instance in database
+		userAvatarRequest := new(models.UserAvatar)
+		has, err := DBengine.Table("user_avatar").Where("owner_id = ?", userRequest.Id).Desc("id").Get(userAvatarRequest)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"error": "database error",
+			})
+		}
+		if !has {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+				"error": "invalid user avatar",
+			})
+		}
+
+		// Update user_avatar in database
+		userAvatarRequest.FileName = "base_avatar.png"
+		_, err = DBengine.ID(userAvatarRequest.Id).Cols("file_name").Update(userAvatarRequest)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"error": "database error",
+			})
+		}
+
+		return c.Status(fiber.StatusOK).JSON(fiber.Map{
+			"user": userRequest,
+			"user_avatar": userAvatarRequest,
 		})
 	}
 }
