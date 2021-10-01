@@ -45,6 +45,16 @@ func CreateDBEngine() (*xorm.Engine, error) {
 	if err := engine.Sync(new(models.AuthAccess)); err != nil {
 		return nil, err
 	}
+
+	// Sync the User Avatar struct and the database
+	if err := engine.Sync(new(models.UserAvatar)); err != nil {
+		return nil, err
+	}
+
+	// Sync the Files struct and the database
+	if err := engine.Sync(new(models.File)); err != nil {
+		return nil, err
+	}
 	
 	return engine, nil
 }
