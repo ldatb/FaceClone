@@ -25,36 +25,37 @@ func GenerateAuthKey() (string, error) {
 }
 
 func ValidateAuthKey(email string, token string) (bool, error) {
-		// Connect to dabase
-		DBengine, err := data.CreateDBEngine()
+	// Connect to dabase
+	DBengine, err := data.CreateDBEngine()
+	if err != nil {
+		panic(err)
+	}
+
+	// Search the user token
+	// The CheckUser function is not being used because the tables are different
+	authRequest := new(models.AuthAccess)
+	authDb, err := DBengine.Table("auth_access").Where("email = ?", email).Get(authRequest)
+	if err != nil {
+		return false, err
+	}
+
+	// User not found
+	if !authDb {
+		return false, err
+	}
+
+	// Compare tokens
+	if token == authRequest.AccessToken {
+		// If it's true the token can be deleted from the database
+		_, err = DBengine.Table("auth_access").Where("email = ?", email).Delete()
 		if err != nil {
-			panic(err)
-		}
-
-		// Search the user token
-		authRequest := new(models.AuthAccess)
-		authDb, err := DBengine.Table("auth_access").Where("email = ?", email).Get(authRequest)
-		if err != nil {
-			return false, err
-		}
-
-		// User not found
-		if !authDb {
-			return false, err
-		}
-
-		// Compare tokens
-		if token == authRequest.AccessToken {
-			// If it's true the token can be deleted from the database
-			_, err = DBengine.Table("auth_access").Where("email = ?", email).Delete()
-			if err != nil {
-				return true, err
-			}
-			
 			return true, err
-		} else {
-			return false, err
 		}
+			
+		return true, err
+	} else {
+		return false, err
+	}
 }
 
 func CheckUser(email string) (bool, *models.User, *xorm.Engine, error) {
