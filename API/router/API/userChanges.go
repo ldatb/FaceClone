@@ -148,8 +148,6 @@ func change_forgot_password(store session.Store) fiber.Handler {
 			c.SendStatus(fiber.StatusBadRequest)
 			panic(err)
 		}
-
-		// Delete token and save
 		sess.Delete(request.Email)
 		if err := sess.Save(); err != nil {
 			panic(err)
@@ -181,28 +179,16 @@ func change_password(store session.Store) fiber.Handler {
 			return fiber.NewError(fiber.StatusBadRequest, "invalid validation credentials")
 		}
 
-		// Check if user exists
-		userExist, userRequest, DBengine, err := utils.CheckUser(request.Email)
+		// Check if user exists, password and token are correct
+		checkUser, checkPass, checkToken, userRequest, DBengine, _, err := utils.CheckAll(request.Email, request.Old_Password, request.Token, store, c)
 		if err != nil {
 			return fiber.NewError(fiber.StatusInternalServerError, "database error")
 		}
-		if !userExist {
+		if !checkUser {
 			return fiber.NewError(fiber.StatusBadRequest, "invalid user")
 		}
-
-		// Check if the old password is correct
-		checkPass, err := utils.CheckPassword(request.Email, request.Old_Password)
-		if err != nil {
-			return fiber.NewError(fiber.StatusServiceUnavailable, "database error")
-		}
 		if !checkPass {
-			return fiber.NewError(fiber.StatusBadRequest, "invalid password")
-		}
-
-		// Check user access token
-		checkToken, _, err := utils.CheckToken(store, c, request.Email, request.Token)
-		if err != nil {
-			return fiber.NewError(fiber.StatusInternalServerError, "database error")
+			return fiber.NewError(fiber.StatusBadRequest, "invalid pass")
 		}
 		if !checkToken {
 			return fiber.NewError(fiber.StatusBadRequest, "invalid token")
@@ -249,28 +235,16 @@ func change_name(store session.Store) fiber.Handler {
 			return fiber.NewError(fiber.StatusBadRequest, "invalid credentials")
 		}
 
-		// Check if user exists
-		userExist, userRequest, DBengine, err := utils.CheckUser(request.Email)
+		// Check if user exists, password and token are correct
+		checkUser, checkPass, checkToken, userRequest, DBengine, _, err := utils.CheckAll(request.Email, request.Password, request.Token, store, c)
 		if err != nil {
 			return fiber.NewError(fiber.StatusInternalServerError, "database error")
 		}
-		if !userExist {
+		if !checkUser {
 			return fiber.NewError(fiber.StatusBadRequest, "invalid user")
 		}
-
-		// Check if password is corrent
-		checkPass, err := utils.CheckPassword(request.Email, request.Password)
-		if err != nil {
-			return fiber.NewError(fiber.StatusInternalServerError, "database error")
-		}
 		if !checkPass {
-			return fiber.NewError(fiber.StatusBadRequest, "invalid password")
-		}
-
-		// Check user access token
-		checkToken, _, err := utils.CheckToken(store, c, request.Email, request.Token)
-		if err != nil {
-			return fiber.NewError(fiber.StatusInternalServerError, "database error")
+			return fiber.NewError(fiber.StatusBadRequest, "invalid pass")
 		}
 		if !checkToken {
 			return fiber.NewError(fiber.StatusBadRequest, "invalid token")
