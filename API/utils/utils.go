@@ -121,3 +121,43 @@ func CheckToken(store session.Store, c *fiber.Ctx, email string, token string) (
 
 	return true, sess, nil
 }
+
+func CheckAll(email string, password string, token string, store session.Store, c *fiber.Ctx) (bool, bool, bool, *models.User, *xorm.Engine, *session.Session, error) {
+	// Connect to database
+	DBengine, err := data.CreateDBEngine()
+	if err != nil {
+		return false, false, false, nil, DBengine, nil, err
+	}
+
+	// Get store
+	sess, err := store.Get(c)
+	if err != nil {
+		return false, false, false, nil, DBengine, sess, err
+	}
+
+	// Get user
+	userRequest := new(models.User)
+	userDb, err := DBengine.Table("user").Where("email = ?", email).Desc("id").Get(userRequest)
+	if err != nil {
+		return false, false, false, userRequest, DBengine, sess, err
+	}
+
+	// User not found
+	if !userDb {
+		return false, false, false, userRequest, DBengine, sess, nil
+	}
+
+	// Check if the password is correct
+	if err := bcrypt.CompareHashAndPassword([]byte(userRequest.Password), []byte(password)); err != nil {
+		return true, false, false, userRequest, DBengine, sess, nil
+	}
+
+
+	// Check if given token is equal to store token
+	check_for_token := sess.Get(email)
+	if check_for_token == nil || check_for_token != token {
+		return true, true, false, userRequest, DBengine, sess, nil
+	}
+
+	return true, true, true, userRequest, DBengine, sess, nil
+}
