@@ -88,13 +88,8 @@ func CheckPassword(given_email string, given_password string) (bool, error) {
 
 	// Search the user in the "user" table
 	userTableRequest := new(models.User)
-	userSearch, err := DBengine.Table("user").Where("email = ?", given_email).Desc("id").Get(userTableRequest)
+	_, err = DBengine.Table("user").Where("email = ?", given_email).Desc("id").Get(userTableRequest)
 	if err != nil {
-		return false, err
-	}
-
-	// User not found
-	if !userSearch {
 		return false, err
 	}
 
