@@ -4,7 +4,6 @@ go 1.17
 
 require (
 	github.com/gofiber/fiber/v2 v2.19.0
-	github.com/gofiber/jwt/v3 v3.1.1
 	github.com/gofiber/storage/postgres v0.0.0-20210922062006-ff033d0e0e86
 	github.com/golang-jwt/jwt/v4 v4.1.0
 	github.com/joho/godotenv v1.4.0
