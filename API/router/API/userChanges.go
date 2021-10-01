@@ -38,16 +38,22 @@ func forgot_password() fiber.Handler {
 
 		// Not enough values given
 		if request.Email == "" {
-			return fiber.NewError(fiber.StatusBadRequest, "invalid credentials")
+			return c.Status(fiber.StatusPartialContent).JSON(fiber.Map{
+				"error": "invalid credentials",
+			})
 		}
 
 		// Check if user exists
 		userExist, userRequest, DBengine, err := utils.CheckUser(request.Email)
 		if err != nil {
-			return fiber.NewError(fiber.StatusInternalServerError, "database error")
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"error": "database error",
+			})
 		}
 		if !userExist {
-			return fiber.NewError(fiber.StatusBadRequest, "invalid user")
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+				"error": "invalid user",
+			})
 		}
 
 		// Generate and insert the auth token in the database
@@ -88,10 +94,12 @@ func forgot_password() fiber.Handler {
 		`, token))
 		d := gomail.NewDialer(email_host, 2525, email_username, email_password)
 		if err := d.DialAndSend(m); err != nil {
-			return fiber.NewError(fiber.StatusServiceUnavailable, "token error")
+			return c.Status(fiber.StatusServiceUnavailable).JSON(fiber.Map{
+				"error": "service error",
+			})
 		}
 
-		return c.JSON(fiber.Map{
+		return c.Status(fiber.StatusOK).JSON(fiber.Map{
 			"user": userRequest,
 		})
 	}
@@ -114,16 +122,22 @@ func change_forgot_password(store session.Store) fiber.Handler {
 
 		// Not enough values given
 		if request.Email == "" || request.Password == "" {
-			return fiber.NewError(fiber.StatusBadRequest, "invalid credentials")
+			return c.Status(fiber.StatusPartialContent).JSON(fiber.Map{
+				"error": "invalid credentials",
+			})
 		}
 
 		// Check if user exists
 		userExist, userRequest, DBengine, err := utils.CheckUser(request.Email)
 		if err != nil {
-			return fiber.NewError(fiber.StatusInternalServerError, "database error")
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"error": "database error",
+			})
 		}
 		if !userExist {
-			return fiber.NewError(fiber.StatusBadRequest, "invalid user")
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+				"error": "invalid user",
+			})
 		}
 
 		// Encrypt the password
@@ -153,7 +167,9 @@ func change_forgot_password(store session.Store) fiber.Handler {
 			panic(err)
 		}
 
-		return c.SendStatus(fiber.StatusOK)
+		return c.Status(fiber.StatusOK).JSON(fiber.Map{
+			"user": userRequest,
+		})
 	}
 }
 
@@ -175,7 +191,9 @@ func change_password(store session.Store) fiber.Handler {
 
 		// Not enough values given
 		if request.Email == "" || request.Old_Password == "" || request.New_Password == "" {
-			return fiber.NewError(fiber.StatusBadRequest, "invalid credentials")
+			return c.Status(fiber.StatusPartialContent).JSON(fiber.Map{
+				"error": "invalid credentials",
+			})
 		}
 
 		// Check token in header
@@ -184,16 +202,24 @@ func change_password(store session.Store) fiber.Handler {
 		// Check if user exists, password and token are correct
 		checkUser, checkPass, checkToken, userRequest, DBengine, _, err := utils.CheckAll(request.Email, request.Old_Password, token, store, c)
 		if err != nil {
-			return fiber.NewError(fiber.StatusInternalServerError, "database error")
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"error": "database error",
+			})
 		}
 		if !checkUser {
-			return fiber.NewError(fiber.StatusBadRequest, "invalid user")
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+				"error": "invalid user",
+			})
 		}
 		if !checkPass {
-			return fiber.NewError(fiber.StatusBadRequest, "invalid pass")
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+				"error": "invalid password",
+			})
 		}
 		if !checkToken {
-			return fiber.NewError(fiber.StatusBadRequest, "invalid token")
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+				"error": "invalid token",
+			})
 		}
 
 		// Encrypt the new password
@@ -210,7 +236,9 @@ func change_password(store session.Store) fiber.Handler {
 			return err
 		}
 
-		return c.SendStatus(fiber.StatusOK)
+		return c.Status(fiber.StatusOK).JSON(fiber.Map{
+			"user": userRequest,
+		})
 	}
 }
 
@@ -233,7 +261,9 @@ func change_name(store session.Store) fiber.Handler {
 
 		// Not enough values given
 		if request.Email == "" || request.Password == "" || request.New_Name == "" || request.New_LastName == "" {
-			return fiber.NewError(fiber.StatusBadRequest, "invalid credentials")
+			return c.Status(fiber.StatusPartialContent).JSON(fiber.Map{
+				"error": "invalid credentials",
+			})
 		}
 
 		// Get token in header
@@ -242,16 +272,24 @@ func change_name(store session.Store) fiber.Handler {
 		// Check if user exists, password and token are correct
 		checkUser, checkPass, checkToken, userRequest, DBengine, _, err := utils.CheckAll(request.Email, request.Password, token, store, c)
 		if err != nil {
-			return fiber.NewError(fiber.StatusInternalServerError, "database error")
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"error": "database error",
+			})
 		}
 		if !checkUser {
-			return fiber.NewError(fiber.StatusBadRequest, "invalid user")
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+				"error": "invalid user",
+			})
 		}
 		if !checkPass {
-			return fiber.NewError(fiber.StatusBadRequest, "invalid pass")
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+				"error": "invalid password",
+			})
 		}
 		if !checkToken {
-			return fiber.NewError(fiber.StatusBadRequest, "invalid token")
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+				"error": "invalid token",
+			})
 		}
 
 		// Change user's name
@@ -263,6 +301,8 @@ func change_name(store session.Store) fiber.Handler {
 			return err
 		}
 
-		return c.SendStatus(fiber.StatusOK)
+		return c.Status(fiber.StatusOK).JSON(fiber.Map{
+			"user": userRequest,
+		})
 	}
 }

@@ -19,9 +19,9 @@ import (
 
 func UserAuthRouter(app fiber.Router, store session.Store) {
 	app.Post("/register", register(store))
+	app.Put("/validate", validate())
 	app.Post("/login", login(store))
-	app.Post("/logout", logout(store))
-	app.Post("/validate", validate())
+	app.Delete("/logout", logout(store))
 }
 
 /* This functions creates a JSON Web Token to validate the user login */
@@ -80,16 +80,22 @@ func register(store session.Store) fiber.Handler {
 
 		// Not enough values given
 		if request.Name == "" || request.Lastname == "" || request.Email == "" || request.Password == "" {
-			return fiber.NewError(fiber.StatusBadRequest, "invalid credentials")
+			return c.Status(fiber.StatusPartialContent).JSON(fiber.Map{
+				"error": "invalid credentials",
+			})
 		}
 
 		// Check if user exists
 		userExist, _, DBengine, err := utils.CheckUser(request.Email)
 		if err != nil {
-			return fiber.NewError(fiber.StatusInternalServerError, "database error")
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"error": "database error",
+			})
 		}
 		if !userExist {
-			return fiber.NewError(fiber.StatusBadRequest, "invalid user")
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+				"error": "invalid user",
+			})
 		}
 
 		// Encrypt the password
@@ -131,7 +137,9 @@ func register(store session.Store) fiber.Handler {
 
 		// Store session
 		if err := storeSession(c, store, newUser.Email, token); err != nil {
-			return fiber.NewError(fiber.StatusInternalServerError, "database error")
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"error": "database error",
+			})
 		}
 
 		// Get variables for email
@@ -160,7 +168,9 @@ func register(store session.Store) fiber.Handler {
 		`, token))
 		d := gomail.NewDialer(email_host, 2525, email_username, email_password)
 		if err := d.DialAndSend(m); err != nil {
-			return fiber.NewError(fiber.StatusInternalServerError, "token error")
+			return c.Status(fiber.StatusServiceUnavailable).JSON(fiber.Map{
+				"error": "service error",
+			})
 		}
 
 		// Confirm
@@ -189,25 +199,35 @@ func validate() fiber.Handler {
 
 		// Not enough values given
 		if request.Email == "" || request.AuthKey == "" {
-			return fiber.NewError(fiber.StatusBadRequest, "invalid credentials")
+			return c.Status(fiber.StatusPartialContent).JSON(fiber.Map{
+				"error": "invalid credentials",
+			})
 		}
 
 		// Check if user exists
 		userExist, userRequest, DBengine, err := utils.CheckUser(request.Email)
 		if err != nil {
-			return fiber.NewError(fiber.StatusInternalServerError, "database error")
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"error": "database error",
+			})
 		}
 		if !userExist {
-			return fiber.NewError(fiber.StatusBadRequest, "invalid user")
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+				"error": "invalid user",
+			})
 		}
 
 		// Validate
 		validation, err := utils.ValidateAuthKey(request.Email, request.AuthKey)
 		if err != nil {
-			return fiber.NewError(fiber.StatusBadRequest, "database error")
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"error": "database error",
+			})
 		}
 		if !validation {
-			return fiber.NewError(fiber.StatusBadRequest, "invalid key")
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+				"error": "invalid key",
+			})
 		}
 
 		// Get id
@@ -220,7 +240,9 @@ func validate() fiber.Handler {
 			return err
 		}
 
-		return c.SendStatus(fiber.StatusOK)
+		return c.Status(fiber.StatusOK).JSON(fiber.Map{
+			"user": userRequest,
+		})
 	}
 }
 
@@ -241,25 +263,35 @@ func login(store session.Store) fiber.Handler {
 
 		// Not enough values given
 		if request.Email == "" || request.Password == "" {
-			return fiber.NewError(fiber.StatusBadRequest, "invalid credentials")
+			return c.Status(fiber.StatusPartialContent).JSON(fiber.Map{
+				"error": "invalid credentials",
+			})
 		}
 
 		// Check if user exists
 		userExist, userRequest, _, err := utils.CheckUser(request.Email)
 		if err != nil {
-			return fiber.NewError(fiber.StatusInternalServerError, "database error")
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"error": "database error",
+			})
 		}
 		if !userExist {
-			return fiber.NewError(fiber.StatusBadRequest, "invalid user")
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+				"error": "invalid user",
+			})
 		}
 
 		// Check if the password is correct
 		checkPass, err := utils.CheckPassword(request.Email, request.Password)
 		if err != nil {
-			return fiber.NewError(fiber.StatusInternalServerError, "database error")
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"error": "database error",
+			})
 		}
 		if !checkPass {
-			return fiber.NewError(fiber.StatusBadRequest, "invalid password")
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+				"error": "invalid password",
+			})
 		}
 
 		// Create a JWT token
@@ -270,7 +302,9 @@ func login(store session.Store) fiber.Handler {
 
 		// Store session
 		if err := storeSession(c, store, userRequest.Email, token); err != nil {
-			return fiber.NewError(fiber.StatusInternalServerError, "database error")
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"error": "database error",
+			})
 		}
 
 		return c.JSON(fiber.Map{
@@ -297,28 +331,38 @@ func logout(store session.Store) fiber.Handler {
 
 		// Not enough values given
 		if request.Email == "" {
-			return fiber.NewError(fiber.StatusBadRequest, "invalid credentials")
+			return c.Status(fiber.StatusPartialContent).JSON(fiber.Map{
+				"error": "invalid credentials",
+			})
 		}
 
 		// Check token in header
 		token := c.Get("access_token")
 
 		// Check if user exists
-		userExist, _, _, err := utils.CheckUser(request.Email)
+		userExist, userRequest, _, err := utils.CheckUser(request.Email)
 		if err != nil {
-			return fiber.NewError(fiber.StatusInternalServerError, "database error")
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"error": "database error",
+			})
 		}
 		if !userExist {
-			return fiber.NewError(fiber.StatusBadRequest, "invalid user")
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+				"error": "invalid user",
+			})
 		}
 
 		// Check if token is correct
 		checkToken, sess, err := utils.CheckToken(store, c, request.Email, token)
 		if err != nil {
-			return fiber.NewError(fiber.StatusInternalServerError, "database error")
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"error": "database error",
+			})
 		}
 		if !checkToken {
-			return fiber.NewError(fiber.StatusBadRequest, "invalid token")
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+				"error": "invalid token",
+			})
 		}
 
 		// Delete token and save
@@ -327,6 +371,9 @@ func logout(store session.Store) fiber.Handler {
 			panic(err)
 		}
 
-		return c.SendStatus(fiber.StatusOK)
+		return c.Status(fiber.StatusOK).JSON(fiber.Map{
+			"user": userRequest,
+			"token": token,
+		})
 	}
 }
