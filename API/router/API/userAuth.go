@@ -92,9 +92,9 @@ func register(store session.Store) fiber.Handler {
 				"error": "database error",
 			})
 		}
-		if !userExist {
+		if userExist {
 			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-				"error": "invalid user",
+				"error": "user already exist",
 			})
 		}
 
@@ -117,7 +117,26 @@ func register(store session.Store) fiber.Handler {
 			return err
 		}
 
-		// Generate and insert the auth token in the database
+		// Create user avatar (basic)
+		newUserAvatar := &models.UserAvatar{
+			OwnerId: newUser.Id,
+			FileName: "base_avatar.png",
+		}
+		_, err = DBengine.Insert(newUserAvatar)
+		if err != nil {
+			return err
+		}
+
+		// Update user with avatar id
+		newUser.AvatarId = newUserAvatar.Id
+		_, err = DBengine.ID(newUser.Id).Cols("avatar_id").Update(newUser)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"error": "database error",
+			})
+		}
+
+		// Generate and insert an auth token in the database
 		token, _ := utils.GenerateAuthKey()
 		newToken := &models.AuthAccess{
 			Email:       request.Email,
