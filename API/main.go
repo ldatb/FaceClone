@@ -2,19 +2,20 @@ package main
 
 import (
 	"faceclone-api/data"
-	"faceclone-api/router/API"
+	Users_router "faceclone-api/router/users"
+	Uploads_router "faceclone-api/router/uploads"
 	"fmt"
 	"log"
 	"os"
 
 	"github.com/gofiber/fiber/v2"
 	//jwtware "github.com/gofiber/jwt/v3"
-	_ "github.com/lib/pq"
 	"github.com/joho/godotenv"
+	_ "github.com/lib/pq"
 )
 
 /* NOT USING YET
-/* Private request to when a user is logged in, requires access token to enter 
+/* Private request to when a user is logged in, requires access token to enter
 func private(c *fiber.Ctx) error {
 	return c.JSON(fiber.Map{
 		"success": true,
@@ -47,10 +48,16 @@ func main() {
 	// Store user session
 	store := data.CreateStore()
 
-	// Routes and groups
-	api := app.Group("/api")
-	API_router.UserAuthRouter(api, *store)
-	API_router.UserChangesRouter(api, *store)
+	// User router
+	user_group := app.Group("/users")
+	Users_router.UserAuthRouter(user_group, *store)
+	Users_router.UserChangesRouter(user_group, *store)
+	Users_router.UserSearchRouter(user_group)
+
+	// Uploads router
+	uploads_group := app.Group("/uploads")
+	uploads_group.Static("/files", "./uploaded")
+	Uploads_router.FilesRouter(uploads_group)
 
 	/* NOT USING YET
 	privateAPI := app.Group("/private")
