@@ -5,10 +5,12 @@ import (
 	"faceclone-api/router/API"
 	"fmt"
 	"log"
+	"os"
 
 	"github.com/gofiber/fiber/v2"
 	//jwtware "github.com/gofiber/jwt/v3"
 	_ "github.com/lib/pq"
+	"github.com/joho/godotenv"
 )
 
 /* NOT USING YET
@@ -66,6 +68,13 @@ func main() {
 		return c.SendStatus(404)
 	})
 
+	// Get port to listen
+	err = godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+	PORT := ":" + os.Getenv("PORT")
+
 	// Fiber listen
-	log.Fatal(app.Listen(":3000"))
+	log.Fatal(app.Listen(PORT))
 }
