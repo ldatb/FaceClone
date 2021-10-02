@@ -42,7 +42,7 @@ func CreateDBEngine() (*xorm.Engine, error) {
 	}
 
 	// Sync the OAuth struct and the database
-	if err := engine.Sync(new(models.AuthAccess)); err != nil {
+	if err := engine.Sync(new(models.AuthToken)); err != nil {
 		return nil, err
 	}
 
