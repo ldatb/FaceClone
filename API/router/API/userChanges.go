@@ -380,7 +380,7 @@ func change_avatar(store session.Store) fiber.Handler {
 		}
 
 		// Save file
-		c.SaveFile(avatar, fmt.Sprintf("./data/files/avatar/%s", avatar.Filename))
+		c.SaveFile(avatar, fmt.Sprintf("./uploaded/avatar/%s", avatar.Filename))
 
 		// Get user_avatar instance in database
 		userAvatarRequest := new(models.UserAvatar)
