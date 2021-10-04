@@ -30,7 +30,7 @@ func CreateDBEngine() (*xorm.Engine, error) {
 	if err != nil {
 		return nil, err
 	}
-	
+
 	// Check if there is a connection
 	if err := engine.Ping(); err != nil {
 		return nil, err
@@ -51,16 +51,21 @@ func CreateDBEngine() (*xorm.Engine, error) {
 		return nil, err
 	}
 
-	// Sync the Files struct and the database
-	if err := engine.Sync(new(models.Media)); err != nil {
+	// Sync the Posts struct and the database
+	if err := engine.Sync(new(models.Post)); err != nil {
 		return nil, err
 	}
-	
+
+	// Sync the Posts media struct and the database
+	if err := engine.Sync(new(models.PostMedia)); err != nil {
+		return nil, err
+	}
+
 	return engine, nil
 }
 
 /* Session storage stores user session JWT */
-func CreateStore() (*session.Store) {
+func CreateStore() *session.Store {
 	// Load .env file with secrets
 	err := godotenv.Load()
 	if err != nil {
@@ -72,12 +77,12 @@ func CreateStore() (*session.Store) {
 
 	// Create storage
 	storage := postgres.New(postgres.Config{
-		Host: "localhost",
+		Host:     "localhost",
 		Username: DB_User,
 		Password: DB_Pass,
-		Port: 5432,
+		Port:     5432,
 		Database: DB_Name,
-		Table: "session_storage",
+		Table:    "session_storage",
 	})
 
 	store := session.New(session.Config{Storage: storage})
