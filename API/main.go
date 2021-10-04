@@ -3,7 +3,6 @@ package main
 import (
 	"faceclone-api/data"
 	Users_router "faceclone-api/router/users"
-	Uploads_router "faceclone-api/router/uploads"
 	"fmt"
 	"log"
 	"os"
@@ -50,14 +49,10 @@ func main() {
 
 	// User router
 	user_group := app.Group("/users")
+	user_group.Static("/avatar", "./media/avatar")
 	Users_router.UserAuthRouter(user_group, *store)
 	Users_router.UserChangesRouter(user_group, *store)
-	Users_router.UserSearchRouter(user_group)
-
-	// Uploads router
-	uploads_group := app.Group("/uploads")
-	uploads_group.Static("/files", "./uploaded")
-	Uploads_router.FilesRouter(uploads_group)
+	Users_router.UserGettersRouter(user_group)
 
 	/* NOT USING YET
 	privateAPI := app.Group("/private")
