@@ -10,3 +10,15 @@ type User struct {
 	AvatarId  int64  `json:"-" validate:"required,number"`
 	Validated bool   `json:"-"`
 }
+
+type UserAvatar struct {
+	Id       int64  `json:"id" validate:"required,number"`
+	OwnerId  int64  `json:"-" validate:"required,number"`
+	FileName string `json:"file_name" validate:"required"`
+}
+
+type AuthToken struct {
+	Email       string `json:"email" validate:"required,email"`
+	AccessToken string `json:"access_token" validate:"required"`
+	TokenType   string `json:"token_type" validate:"required"`
+}
