@@ -36,7 +36,7 @@ func ValidateAuthKey(email string, token string) (bool, error) {
 	// Search the user token
 	// The CheckUser function is not being used because the tables are different
 	authRequest := new(models.AuthToken)
-	authDb, err := DBengine.Table("auth_access").Where("email = ?", email).Get(authRequest)
+	authDb, err := DBengine.Table("auth_token").Where("email = ?", email).Get(authRequest)
 	if err != nil {
 		return false, err
 	}
@@ -49,7 +49,7 @@ func ValidateAuthKey(email string, token string) (bool, error) {
 	// Compare tokens
 	if token == authRequest.AccessToken {
 		// If it's true the token can be deleted from the database
-		_, err = DBengine.Table("auth_access").Where("email = ?", email).Delete()
+		_, err = DBengine.Table("auth_token").Where("email = ?", email).Delete()
 		if err != nil {
 			return true, err
 		}
@@ -191,7 +191,7 @@ func CreateAvatarUrl(filename string) (string, error) {
 	}
 		
 	// Get image url
-	URL := os.Getenv("APP_URL") + "/uploads/files/avatar/" + filename
+	URL := os.Getenv("APP_URL") + "/users/avatar/" + filename
 
 	return URL, nil
 }
