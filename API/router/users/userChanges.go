@@ -1,4 +1,4 @@
-package API_router
+package User_router
 
 import (
 	"fmt"
@@ -397,7 +397,7 @@ func change_avatar(store session.Store) fiber.Handler {
 
 		// Save file
 		filename := strconv.Itoa(int(userRequest.Id)) + strconv.Itoa(int(userAvatarRequest.Id)) + avatar.Filename
-		c.SaveFile(avatar, fmt.Sprintf("./uploaded/avatar/%s", filename))
+		c.SaveFile(avatar, fmt.Sprintf("./media/avatar/%s", filename))
 
 		// Update user_avatar in database
 		userAvatarRequest.FileName = filename

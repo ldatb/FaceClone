@@ -1,4 +1,4 @@
-package API_router
+package User_router
 
 import (
 	"fmt"
@@ -241,7 +241,7 @@ func validate() fiber.Handler {
 		validation, err := utils.ValidateAuthKey(request.Email, request.AuthKey)
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"error": "database error",
+				"error": "database error 2",
 			})
 		}
 		if !validation {
