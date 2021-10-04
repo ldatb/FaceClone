@@ -69,17 +69,61 @@ func CheckUser(email string) (bool, *models.User, *xorm.Engine, error) {
 
 	// Get user
 	userRequest := new(models.User)
-	userDb, err := DBengine.Table("user").Where("email = ?", email).Desc("id").Get(userRequest)
+	has, err := DBengine.Table("user").Where("email = ?", email).Desc("id").Get(userRequest)
 	if err != nil {
 		return false, userRequest, DBengine, err
 	}
 
 	// User not found
-	if !userDb {
+	if !has {
+		return false, userRequest, DBengine, nil
+	}
+
+	return true, userRequest, DBengine, nil
+}
+
+func CheckUserByUsername(username string) (bool, *models.User, *xorm.Engine, error) {
+	// Connect to database
+	DBengine, err := data.CreateDBEngine()
+	if err != nil {
+		return false, nil, DBengine, err
+	}
+
+	// Get user
+	userRequest := new(models.User)
+	has, err := DBengine.Table("user").Where("username = ?", username).Desc("id").Get(userRequest)
+	if err != nil {
 		return false, userRequest, DBengine, err
 	}
 
-	return true, userRequest, DBengine, err
+	// User not found
+	if !has {
+		return false, userRequest, DBengine, nil
+	}
+
+	return true, userRequest, DBengine, nil
+}
+
+func GetPost(id int64) (bool, *models.Post, *xorm.Engine, error) {
+	// Connect to database
+	DBengine, err := data.CreateDBEngine()
+	if err != nil {
+		return false, nil, DBengine, err
+	}
+
+	// Get user
+	postRequest := new(models.Post)
+	has, err := DBengine.Table("post").Where("id = ?", id).Desc("id").Get(postRequest)
+	if err != nil {
+		return false, postRequest, DBengine, err
+	}
+
+	// Post not found
+	if !has {
+		return false, postRequest, DBengine, nil
+	}
+
+	return true, postRequest, DBengine, nil
 }
 
 func CheckPassword(given_email string, given_password string) (bool, error) {
@@ -135,13 +179,13 @@ func CheckAll(email string, password string, token string, store session.Store, 
 
 	// Get user
 	userRequest := new(models.User)
-	userDb, err := DBengine.Table("user").Where("email = ?", email).Desc("id").Get(userRequest)
+	has, err := DBengine.Table("user").Where("email = ?", email).Desc("id").Get(userRequest)
 	if err != nil {
 		return false, false, false, userRequest, DBengine, sess, err
 	}
 
 	// User not found
-	if !userDb {
+	if !has {
 		return false, false, false, userRequest, DBengine, sess, nil
 	}
 
