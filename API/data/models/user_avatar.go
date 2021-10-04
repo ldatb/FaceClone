@@ -1,7 +1,7 @@
 package models
 
 type UserAvatar struct {
-	Id      int64 `json:"id" validate:"required"`
-	OwnerId int64 `json:"-" validate:"required"`
+	Id       int64  `json:"id" validate:"required,number"`
+	OwnerId  int64  `json:"-" validate:"required,number"`
 	FileName string `json:"file_name" validate:"required"`
 }
