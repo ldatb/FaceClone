@@ -7,8 +7,9 @@ type Post struct {
 	Description string `json:"description" validate:"alphanumunicode"`
 }
 
-type Media struct {
+type PostMedia struct {
 	Id       int64  `json:"id" validate:"required,number"`
+	PostId       int64  `json:"post_id" validate:"required,number"`
 	OwnerId  int64  `json:"-" validate:"required,number"`
 	FileName string `json:"file_name" validate:"required"`
 }
