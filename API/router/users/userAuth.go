@@ -109,6 +109,7 @@ func register(store session.Store) fiber.Handler {
 			Name:      request.Name,
 			Lastname:  request.Lastname,
 			Fullname:  request.Name + " " + request.Lastname,
+			Username: request.Name + request.Lastname,
 			Email:     request.Email,
 			Password:  string(hashPass),
 			Validated: false,
@@ -241,7 +242,7 @@ func validate() fiber.Handler {
 		validation, err := utils.ValidateAuthKey(request.Email, request.AuthKey)
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"error": "database error 2",
+				"error": "database error",
 			})
 		}
 		if !validation {
