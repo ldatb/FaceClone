@@ -52,7 +52,7 @@ func CreateDBEngine() (*xorm.Engine, error) {
 	}
 
 	// Sync the Files struct and the database
-	if err := engine.Sync(new(models.File)); err != nil {
+	if err := engine.Sync(new(models.Media)); err != nil {
 		return nil, err
 	}
 	
