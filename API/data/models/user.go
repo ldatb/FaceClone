@@ -7,6 +7,6 @@ type User struct {
 	Fullname  string `json:"fullname"`
 	Email     string `json:"email" validate:"required,email"`
 	Password  string `json:"-" validate:"required"`
-	AvatarId  int64  `json:"-"`
+	AvatarId  int64  `json:"-" validate:"required"`
 	Validated bool   `json:"-"`
 }
