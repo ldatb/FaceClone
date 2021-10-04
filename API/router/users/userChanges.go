@@ -3,6 +3,7 @@ package User_router
 import (
 	"fmt"
 	"os"
+	"strings"
 	"strconv"
 
 	"faceclone-api/data/models"
@@ -21,6 +22,7 @@ func UserChangesRouter(app fiber.Router, store session.Store) {
 	app.Put("/change-forgot-password", change_forgot_password(store))
 	app.Put("/change-password", change_password(store))
 	app.Put("/change-name", change_name(store))
+	app.Put("/change-username", change_username(store))
 	app.Put("/change-avatar", change_avatar(store))
 	app.Delete("/delete-avatar", delete_avatar(store))
 }
@@ -311,6 +313,85 @@ func change_name(store session.Store) fiber.Handler {
 	}
 }
 
+type ChangeUsernameRequest struct {
+	Email        string
+	Password     string
+	New_Username     string
+}
+
+/* This function changes a User's username */
+func change_username(store session.Store) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		// Get request
+		request := new(ChangeUsernameRequest)
+
+		if err := c.BodyParser(request); err != nil {
+			return err
+		}
+
+		// Not enough values given
+		if request.Email == "" || request.Password == "" || request.New_Username == "" {
+			return c.Status(fiber.StatusPartialContent).JSON(fiber.Map{
+				"error": "invalid credentials",
+			})
+		}
+
+		// Prepare username
+		new_username := strings.ReplaceAll(strings.ToLower(request.New_Username), " ", "")
+
+		// Get token in header
+		token := c.Get("access_token")
+
+		// Check if user exists, password and token are correct
+		checkUser, checkPass, checkToken, userRequest, DBengine, _, err := utils.CheckAll(request.Email, request.Password, token, store, c)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"error": "database error",
+			})
+		}
+		if !checkUser {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+				"error": "invalid user",
+			})
+		}
+		if !checkPass {
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+				"error": "invalid password",
+			})
+		}
+		if !checkToken {
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+				"error": "invalid token",
+			})
+		}
+
+		// Check if there's a user with this username
+		hasUsername, _, _, err := utils.CheckUserByUsername(new_username)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"error": "database error",
+			})
+		}
+		if hasUsername {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+				"error": "username already in use",
+			})
+		}
+
+		// Change user's name
+		id := userRequest.Id
+		userRequest.Username = new_username
+		_, err = DBengine.ID(id).Cols("username").Update(userRequest)
+		if err != nil {
+			return err
+		}
+
+		return c.Status(fiber.StatusOK).JSON(fiber.Map{
+			"user": userRequest,
+		})
+	}
+}
+
 
 /* This function changes an user avatar */
 func change_avatar(store session.Store) fiber.Handler {
@@ -335,26 +416,13 @@ func change_avatar(store session.Store) fiber.Handler {
 		token := c.Get("access_token")
 
 		// Check if user exists
-		has, _, _, err := utils.CheckUser(email)
+		has, userRequest, DBengine, err := utils.CheckUser(email)
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"error": "database error",
 			})
 		}
 		if !has {
-			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-				"error": "invalid user",
-			})
-		}
-
-		// Check if user exists
-		userExist, userRequest, DBengine, err := utils.CheckUser(email)
-		if err != nil {
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"error": "database error",
-			})
-		}
-		if !userExist {
 			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 				"error": "invalid user",
 			})
