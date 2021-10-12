@@ -403,7 +403,7 @@ func change_avatar(store session.Store) fiber.Handler {
 			})
 		}
 
-		// Get user id
+		// Get user email
 		email_form := form.Value["email"]
 		if len(email_form) <= 0 {
 			return c.Status(fiber.StatusPartialContent).JSON(fiber.Map{
@@ -464,7 +464,7 @@ func change_avatar(store session.Store) fiber.Handler {
 		}
 
 		// Save file
-		filename := strconv.Itoa(int(userRequest.Id)) + strconv.Itoa(int(userAvatarRequest.Id)) + avatar.Filename
+		filename := strconv.Itoa(int(userRequest.Id)) + "_" + avatar.Filename
 		c.SaveFile(avatar, fmt.Sprintf("./media/avatar/%s", filename))
 
 		// Update user_avatar in database
