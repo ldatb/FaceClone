@@ -1,6 +1,7 @@
 package Posts_router
 
 import (
+	"fmt"
 	"strconv"
 
 	"faceclone-api/data/models"
@@ -12,6 +13,7 @@ import (
 
 func PostsControlRouter(app fiber.Router, store session.Store) {
 	app.Post("/create-post", create_post(store))
+	app.Post("/create-post-media", create_post_media(store))
 	app.Put("/change-post", change_post(store))
 	app.Delete("/delete-post", delete_post(store))
 }
@@ -84,6 +86,133 @@ func create_post(store session.Store) fiber.Handler {
 
 		return c.Status(fiber.StatusOK).JSON(fiber.Map{
 			"post": newPost,
+		})
+	}
+}
+
+/* This function creates a post media */
+func create_post_media(store session.Store) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		form, err := c.MultipartForm()
+		if err != nil {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+				"error": "failed getting credentials",
+			})
+		}
+
+		// Get user email and post id
+		email_form := form.Value["email"]
+		post_id_form := form.Value["post_id"]
+		if len(post_id_form) <= 0 || len(email_form) <= 0 {
+			return c.Status(fiber.StatusPartialContent).JSON(fiber.Map{
+				"error": "invalid credentials",
+			})
+		}
+		postIdString := post_id_form[0]
+		email := email_form[0]
+
+		// Get token in header
+		token := c.Get("access_token")
+
+		// Check if user exists
+		has, userRequest, _, err := utils.CheckUser(email)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"error": "database error",
+			})
+		}
+		if !has {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+				"error": "invalid user",
+			})
+		}
+		
+		// Check if token is correct
+		checkToken, _, err := utils.CheckToken(store, c, email, token)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"error": "database error",
+			})
+		}
+		if !checkToken {
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+				"error": "invalid token",
+			})
+		}
+
+		// Transform post id in int64
+		postId, err := strconv.ParseInt(postIdString, 10, 64)
+		if err != nil {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+				"error": "invalid post id",
+			})
+		}
+
+		// Check if post exists
+		hasPost, postRequest, DBengine, err := utils.GetPost(postId)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"error": "database error",
+			})
+		}
+		if !hasPost {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+				"error": "post not found",
+			})
+		}
+
+		// Check if user id is equal to the owner
+		if postRequest.OwnerId != userRequest.Id {
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+				"error": "not the owner",
+			})
+		}
+
+		// Check if this post already has a media (medias can't be changed)
+		if postRequest.MediaId != 0 {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+				"error": "post already has media",
+			})
+		}
+
+		// Get media from request
+		media, err := c.FormFile("media")
+		if err != nil {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+				"error": "invalid image",
+			})
+		}
+
+		// Save file
+		filename := strconv.Itoa(int(postRequest.OwnerId)) + "_" + strconv.Itoa(int(postRequest.Id)) + "_" + media.Filename
+		c.SaveFile(media, fmt.Sprintf("./media/post_media/%s", filename))
+
+		// Create Post Media model
+		newPostMedia := &models.PostMedia{
+			PostId: postRequest.Id,
+			OwnerId: postRequest.OwnerId,
+			FileName: filename,
+		}
+
+		// Put media in database
+		_, err = DBengine.Insert(newPostMedia)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"error": "database error",
+			})
+		}
+
+		// Update post media id
+		postRequest.MediaId = newPostMedia.Id
+		_, err = DBengine.ID(postRequest.Id).Cols("media_id").Update(postRequest)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"error": "database error",
+			})
+		}
+
+		return c.Status(fiber.StatusOK).JSON(fiber.Map{
+			"post_media": newPostMedia,
 		})
 	}
 }
@@ -184,12 +313,11 @@ func change_post(store session.Store) fiber.Handler {
 }
 
 type DeletePostRequest struct {
-	Email               string
-	PostId              string
+	Email  string
+	PostId string
 }
 
-
-/* This function changes the description of a post */
+/* This function deletes a post */
 func delete_post(store session.Store) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		// Get request
