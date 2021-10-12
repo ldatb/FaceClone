@@ -36,28 +36,25 @@ func CreateDBEngine() (*xorm.Engine, error) {
 		return nil, err
 	}
 
-	// Sync the User struct and the database
-	if err := engine.Sync(new(models.User)); err != nil {
+	// Sync all User related stuff
+	if err := engine.Sync(new(models.User)); err != nil { // User general
+		return nil, err
+	}
+	if err := engine.Sync(new(models.AuthToken)); err != nil { // User auth token
+		return nil, err
+	}
+	if err := engine.Sync(new(models.UserAvatar)); err != nil { // User avatar
 		return nil, err
 	}
 
-	// Sync the OAuth struct and the database
-	if err := engine.Sync(new(models.AuthToken)); err != nil {
+	// Sync all Post related stuff
+	if err := engine.Sync(new(models.Post)); err != nil { // Posts
 		return nil, err
 	}
-
-	// Sync the User Avatar struct and the database
-	if err := engine.Sync(new(models.UserAvatar)); err != nil {
+	if err := engine.Sync(new(models.PostMedia)); err != nil { // Post media
 		return nil, err
 	}
-
-	// Sync the Posts struct and the database
-	if err := engine.Sync(new(models.Post)); err != nil {
-		return nil, err
-	}
-
-	// Sync the Posts media struct and the database
-	if err := engine.Sync(new(models.PostMedia)); err != nil {
+	if err := engine.Sync(new(models.PostComments)); err != nil { // Post comments
 		return nil, err
 	}
 
