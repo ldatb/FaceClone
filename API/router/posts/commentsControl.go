@@ -42,28 +42,20 @@ func create_comment(store session.Store) fiber.Handler {
 		// Get token in header
 		token := c.Get("access_token")
 
-		// Check if user exists
-		has, userRequest, _, err := utils.CheckUser(request.Email)
+		// Check if user exists and token is correct
+		hasUser, validToken, userModel, _, _, err := utils.CheckUserAndToken(store, c, request.Email, token)
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"error": "database error",
 			})
 		}
-		if !has {
+		if !hasUser {
 			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 				"error": "invalid user",
 			})
 		}
-
-		// Check if token is correct
-		checkToken, _, err := utils.CheckToken(store, c, userRequest.Email, token)
-		if err != nil {
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"error": "database error",
-			})
-		}
-		if !checkToken {
-			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+		if !validToken {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 				"error": "invalid token",
 			})
 		}
@@ -92,8 +84,8 @@ func create_comment(store session.Store) fiber.Handler {
 		// Create post model
 		newComment := &models.PostComments{
 			PostId:        postId,
-			OwnerUsername: userRequest.Username,
-			OwnerId:       userRequest.Id,
+			OwnerUsername: userModel.Username,
+			OwnerId:       userModel.Id,
 			Comment:       request.Comment,
 		}
 
@@ -137,28 +129,20 @@ func change_comment(store session.Store) fiber.Handler {
 		// Get token in header
 		token := c.Get("access_token")
 
-		// Check if user exists
-		has, userRequest, _, err := utils.CheckUser(request.Email)
+		// Check if user exists and token is correct
+		hasUser, validToken, userModel, _, _, err := utils.CheckUserAndToken(store, c, request.Email, token)
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"error": "database error",
 			})
 		}
-		if !has {
+		if !hasUser {
 			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 				"error": "invalid user",
 			})
 		}
-
-		// Check if token is correct
-		checkToken, _, err := utils.CheckToken(store, c, request.Email, token)
-		if err != nil {
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"error": "database error",
-			})
-		}
-		if !checkToken {
-			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+		if !validToken {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 				"error": "invalid token",
 			})
 		}
@@ -185,7 +169,7 @@ func change_comment(store session.Store) fiber.Handler {
 		}
 
 		// Check if user id is equal to the owner
-		if commentRequest.OwnerId != userRequest.Id {
+		if commentRequest.OwnerId != userModel.Id {
 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 				"error": "not the owner",
 			})
@@ -231,28 +215,20 @@ func delete_comment(store session.Store) fiber.Handler {
 		// Get token in header
 		token := c.Get("access_token")
 
-		// Check if user exists
-		has, userRequest, _, err := utils.CheckUser(request.Email)
+		// Check if user exists and token is correct
+		hasUser, validToken, userModel, _, _, err := utils.CheckUserAndToken(store, c, request.Email, token)
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"error": "database error",
 			})
 		}
-		if !has {
+		if !hasUser {
 			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 				"error": "invalid user",
 			})
 		}
-
-		// Check if token is correct
-		checkToken, _, err := utils.CheckToken(store, c, request.Email, token)
-		if err != nil {
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"error": "database error",
-			})
-		}
-		if !checkToken {
-			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+		if !validToken {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 				"error": "invalid token",
 			})
 		}
@@ -279,7 +255,7 @@ func delete_comment(store session.Store) fiber.Handler {
 		}
 
 		// Check if user id is equal to the owner
-		if commentRequest.OwnerId != userRequest.Id {
+		if commentRequest.OwnerId != userModel.Id {
 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 				"error": "not the owner",
 			})

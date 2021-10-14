@@ -415,28 +415,20 @@ func change_avatar(store session.Store) fiber.Handler {
 		// Get token in header
 		token := c.Get("access_token")
 
-		// Check if user exists
-		has, userRequest, DBengine, err := utils.CheckUser(email)
+		// Check if user exists and token is correct
+		hasUser, validToken, userModel, DBengine, _, err := utils.CheckUserAndToken(store, c, email, token)
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"error": "database error",
 			})
 		}
-		if !has {
+		if !hasUser {
 			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 				"error": "invalid user",
 			})
 		}
-		
-		// Check if token is correct
-		checkToken, _, err := utils.CheckToken(store, c, email, token)
-		if err != nil {
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"error": "database error",
-			})
-		}
-		if !checkToken {
-			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+		if !validToken {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 				"error": "invalid token",
 			})
 		}
@@ -451,20 +443,20 @@ func change_avatar(store session.Store) fiber.Handler {
 
 		// Get user_avatar instance in database
 		userAvatarRequest := new(models.UserAvatar)
-		has, err = DBengine.Table("user_avatar").Where("owner_id = ?", userRequest.Id).Desc("id").Get(userAvatarRequest)
+		hasAvatar, err := DBengine.Table("user_avatar").Where("owner_id = ?", userModel.Id).Desc("id").Get(userAvatarRequest)
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"error": "database error",
 			})
 		}
-		if !has {
+		if !hasAvatar {
 			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 				"error": "invalid user avatar",
 			})
 		}
 
 		// Save file
-		filename := strconv.Itoa(int(userRequest.Id)) + "_" + avatar.Filename
+		filename := strconv.Itoa(int(userModel.Id)) + "_" + avatar.Filename
 		c.SaveFile(avatar, fmt.Sprintf("./media/avatar/%s", filename))
 
 		// Update user_avatar in database
@@ -477,7 +469,7 @@ func change_avatar(store session.Store) fiber.Handler {
 		}
 
 		return c.Status(fiber.StatusOK).JSON(fiber.Map{
-			"user": userRequest,
+			"user": userModel,
 			"user_avatar": userAvatarRequest,
 		})
 	}
@@ -504,38 +496,30 @@ func delete_avatar(store session.Store) fiber.Handler {
 			})
 		}
 
-		// Check if user exists
-		userExist, userRequest, DBengine, err := utils.CheckUser(request.Email)
+		// Get token in header
+		token := c.Get("access_token")
+
+		// Check if user exists and token is correct
+		hasUser, validToken, userModel, DBengine, _, err := utils.CheckUserAndToken(store, c, request.Email, token)
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"error": "database error",
 			})
 		}
-		if !userExist {
+		if !hasUser {
 			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 				"error": "invalid user",
 			})
 		}
-
-		// Get token in header
-		token := c.Get("access_token")
-
-		// Check if token is valid
-		checkToken, _, err := utils.CheckToken(store, c, request.Email, token)
-		if err != nil {
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"error": "database error",
-			})
-		}
-		if !checkToken {
-			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+		if !validToken {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 				"error": "invalid token",
 			})
 		}
 
 		// Get user_avatar instance in database
 		userAvatarRequest := new(models.UserAvatar)
-		has, err := DBengine.Table("user_avatar").Where("owner_id = ?", userRequest.Id).Desc("id").Get(userAvatarRequest)
+		has, err := DBengine.Table("user_avatar").Where("owner_id = ?", userModel.Id).Desc("id").Get(userAvatarRequest)
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"error": "database error",
@@ -557,7 +541,7 @@ func delete_avatar(store session.Store) fiber.Handler {
 		}
 
 		return c.Status(fiber.StatusOK).JSON(fiber.Map{
-			"user": userRequest,
+			"user": userModel,
 			"user_avatar": userAvatarRequest,
 		})
 	}
