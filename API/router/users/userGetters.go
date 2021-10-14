@@ -1,8 +1,6 @@
 package User_router
 
 import (
-	"regexp"
-
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/session"
 
@@ -12,6 +10,9 @@ import (
 
 func UserGettersRouter(app fiber.Router, store session.Store) {
 	app.Get("/user", get_user(store))
+	app.Get("/get-followers", get_followers())
+	app.Get("/get-following", get_following())
+	app.Get("/get-friends", get_friends())
 }
 
 type UserSearchRequest struct {
@@ -26,9 +27,9 @@ func get_user(store session.Store) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		// Get keyword
 		keywordRequest := new(UserSearchRequest)
-        if err := c.QueryParser(keywordRequest); err != nil {
+		if err := c.QueryParser(keywordRequest); err != nil {
 			return err
-        }
+		}
 
 		// No keywords given
 		if keywordRequest.Keyword == "" {
@@ -37,53 +38,22 @@ func get_user(store session.Store) fiber.Handler {
 			})
 		}
 
-		// Check if query is an email or a name
-		match, err := regexp.MatchString(`^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$`, keywordRequest.Keyword)
+		has, userModel, _, err := utils.GetUserByUsername(keywordRequest.Keyword)
 		if err != nil {
-			return err
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"error": "database error",
+			})
 		}
 
-		requestedUserModel := new(models.User)
-		
-		// Search by email
-		if match {
-			has, userModel, _, err := utils.CheckUser(keywordRequest.Keyword)
-			if err != nil {
-				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-					"error": "database error",
-				})
-			}
-
-			// User not found
-			if !has {
-				return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-					"error": "user not found",
-				})
-			}
-
-			// Save user
-			requestedUserModel = userModel
+		// User not found
+		if !has {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+				"error": "user not found",
+			})
 		}
-	
-		// Search by username
-		if !match {
-			has, userModel, _, err := utils.CheckUserByUsername(keywordRequest.Keyword)
-			if err != nil {
-				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-					"error": "database error",
-				})
-			}
 
-			// User not found
-			if !has {
-				return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-					"error": "user not found",
-				})
-			}
-
-			// Save user
-			requestedUserModel = userModel
-		}
+		// Save user
+		requestedUserModel := userModel
 
 		// Get email (if any)
 		request := new(UserSearchLoggedInRequest)
@@ -93,7 +63,7 @@ func get_user(store session.Store) fiber.Handler {
 		if request.Email != "" {
 			// Get token in header
 			token := c.Get("access_token")
-		
+
 			// Get user model
 			hasUser, checkToken, userModel, DBengine, _, err := utils.CheckUserAndToken(store, c, request.Email, token)
 			if err != nil {
@@ -115,7 +85,7 @@ func get_user(store session.Store) fiber.Handler {
 			// Check if user is same as request
 			if userModel.Id == requestedUserModel.Id {
 				return c.Status(fiber.StatusOK).JSON(fiber.Map{
-					"user": requestedUserModel,
+					"user":  requestedUserModel,
 					"self?": true,
 				})
 			} else {
@@ -135,16 +105,125 @@ func get_user(store session.Store) fiber.Handler {
 				areFriends := utils.Find(userFriendsModel.Friends, requestedUserModel.Username)
 
 				return c.Status(fiber.StatusOK).JSON(fiber.Map{
-					"user": requestedUserModel,
-					"self?": false,
+					"user":       requestedUserModel,
+					"self?":      false,
 					"following?": isFollowing,
-					"friends?": areFriends,
+					"friends?":   areFriends,
 				})
 			}
 		}
 
 		return c.Status(fiber.StatusOK).JSON(fiber.Map{
 			"user": requestedUserModel,
+		})
+	}
+}
+
+type GetFoll struct {
+	Username string
+}
+
+func get_followers() fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		// Get email
+		request := new(GetFoll)
+		if err := c.QueryParser(request); err != nil {
+			return err
+		}
+
+		// Not enough values given
+		if request.Username == "" {
+			return c.Status(fiber.StatusPartialContent).JSON(fiber.Map{
+				"error": "invalid credentials",
+			})
+		}
+
+		// Get user and friends
+		hasUser, userModel, userFriendsModel, err := utils.GetFriendsList(request.Username)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"error": error(err),
+			})
+		}
+		if !hasUser {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"error": "invalid user",
+			})
+		}
+
+		return c.Status(fiber.StatusOK).JSON(fiber.Map{
+			"user":               userModel,
+			"user-follower-list": userFriendsModel.Followers,
+		})
+	}
+}
+
+func get_following() fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		// Get email
+		request := new(GetFoll)
+		if err := c.QueryParser(request); err != nil {
+			return err
+		}
+
+		// No keywords given
+		if request.Username == "" {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+				"error": "no keywords given",
+			})
+		}
+
+		// Get user and friends
+		hasUser, userModel, userFriendsModel, err := utils.GetFriendsList(request.Username)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"error": "database error",
+			})
+		}
+		if !hasUser {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"error": "invalid user",
+			})
+		}
+
+		return c.Status(fiber.StatusOK).JSON(fiber.Map{
+			"user":               userModel,
+			"user-following-list": userFriendsModel.Following,
+		})
+	}
+}
+
+func get_friends() fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		// Get email
+		request := new(GetFoll)
+		if err := c.QueryParser(request); err != nil {
+			return err
+		}
+
+		// No keywords given
+		if request.Username == "" {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+				"error": "no keywords given",
+			})
+		}
+
+		// Get user and friends
+		hasUser, userModel, userFriendsModel, err := utils.GetFriendsList(request.Username)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"error": "database error",
+			})
+		}
+		if !hasUser {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"error": "invalid user",
+			})
+		}
+
+		return c.Status(fiber.StatusOK).JSON(fiber.Map{
+			"user":               userModel,
+			"user-friends-list": userFriendsModel.Friends,
 		})
 	}
 }
