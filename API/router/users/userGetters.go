@@ -44,11 +44,10 @@ func get_user(store session.Store) fiber.Handler {
 		}
 
 		requestedUserModel := new(models.User)
-		var posts []models.Post
 		
 		// Search by email
 		if match {
-			has, userModel, DBengine, err := utils.CheckUser(keywordRequest.Keyword)
+			has, userModel, _, err := utils.CheckUser(keywordRequest.Keyword)
 			if err != nil {
 				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 					"error": "database error",
@@ -64,19 +63,11 @@ func get_user(store session.Store) fiber.Handler {
 
 			// Save user
 			requestedUserModel = userModel
-
-			// Get posts
-			err = DBengine.Table("post").Where("owner_id = ?", userModel.Id).Desc("id").Find(&posts)
-			if err != nil {
-				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-					"error": "database error",
-				})
-			}
 		}
 	
 		// Search by username
 		if !match {
-			has, userModel, DBengine, err := utils.CheckUserByUsername(keywordRequest.Keyword)
+			has, userModel, _, err := utils.CheckUserByUsername(keywordRequest.Keyword)
 			if err != nil {
 				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 					"error": "database error",
@@ -92,14 +83,6 @@ func get_user(store session.Store) fiber.Handler {
 
 			// Save user
 			requestedUserModel = userModel
-
-			// Get posts
-			err = DBengine.Table("post").Where("owner_id = ?", userModel.Id).Desc("id").Find(&posts)
-			if err != nil {
-				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-					"error": "database error",
-				})
-			}
 		}
 
 		// Get email (if any)
@@ -133,7 +116,6 @@ func get_user(store session.Store) fiber.Handler {
 			if userModel.Id == requestedUserModel.Id {
 				return c.Status(fiber.StatusOK).JSON(fiber.Map{
 					"user": requestedUserModel,
-					"user-posts": posts,
 					"self?": true,
 				})
 			} else {
@@ -154,7 +136,6 @@ func get_user(store session.Store) fiber.Handler {
 
 				return c.Status(fiber.StatusOK).JSON(fiber.Map{
 					"user": requestedUserModel,
-					"user-posts": posts,
 					"self?": false,
 					"following?": isFollowing,
 					"friends?": areFriends,
@@ -164,7 +145,6 @@ func get_user(store session.Store) fiber.Handler {
 
 		return c.Status(fiber.StatusOK).JSON(fiber.Map{
 			"user": requestedUserModel,
-			"user-posts": posts,
 		})
 	}
 }
