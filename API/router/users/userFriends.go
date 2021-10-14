@@ -1,8 +1,8 @@
 package User_router
 
 import (
-	"faceclone-api/utils"
 	"faceclone-api/data/models"
+	"faceclone-api/utils"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/session"
@@ -133,8 +133,8 @@ func follow(store session.Store) fiber.Handler {
 		}
 
 		// Check if they follow each other, if so, they become friends
-		followBack := utils.Find(FollowedUserFriendsModel.Following, userModel.Username)
-		if followBack {
+		mutuals := utils.Find(FollowedUserFriendsModel.Following, userModel.Username)
+		if mutuals {
 			// Add each other to the friends list
 			userFriendsModel.Friends = append(userFriendsModel.Friends, followedUserModel.Username)
 			FollowedUserFriendsModel.Friends = append(FollowedUserFriendsModel.Friends, userModel.Username)
@@ -156,11 +156,11 @@ func follow(store session.Store) fiber.Handler {
 		}
 
 		return c.Status(fiber.StatusOK).JSON(fiber.Map{
-			"user-following": userModel.Following,
-			"user-following-usernames": userFriendsModel.Following,
-			"target-followers": followedUserModel.Followers,
+			"user-following":             userModel.Following,
+			"user-following-usernames":   userFriendsModel.Following,
+			"target-followers":           followedUserModel.Followers,
 			"target-followers-usernames": FollowedUserFriendsModel.Followers,
-			"friends": followBack,
+			"friends":                    mutuals,
 		})
 	}
 }
@@ -273,8 +273,8 @@ func unfollow(store session.Store) fiber.Handler {
 		}
 
 		// Check if they follow each other, if so, they become friends
-		followBack := utils.Find(UnfollowedUserFriendsModel.Following, userModel.Username)
-		if followBack {
+		mutuals := utils.Find(UnfollowedUserFriendsModel.Following, userModel.Username)
+		if mutuals {
 			// Add each other to the friends list
 			userFriendsModel.Friends = utils.FindAndDelete(userFriendsModel.Friends, unfollowedUserModel.Username)
 			UnfollowedUserFriendsModel.Friends = utils.FindAndDelete(UnfollowedUserFriendsModel.Friends, userModel.Username)
@@ -296,11 +296,11 @@ func unfollow(store session.Store) fiber.Handler {
 		}
 
 		return c.Status(fiber.StatusOK).JSON(fiber.Map{
-			"user-following": userModel.Following,
-			"user-following-usernames": userFriendsModel.Following,
-			"target-followers": unfollowedUserModel.Followers,
+			"user-following":             userModel.Following,
+			"user-following-usernames":   userFriendsModel.Following,
+			"target-followers":           unfollowedUserModel.Followers,
 			"target-followers-usernames": UnfollowedUserFriendsModel.Followers,
-			"where-friends": followBack,
+			"where-friends":              mutuals,
 		})
 	}
 }
