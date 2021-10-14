@@ -9,7 +9,7 @@ import (
 )
 
 func UserGettersRouter(app fiber.Router) {
-	app.Get("/user", search_user())
+	app.Get("/user", get_user())
 }
 
 
@@ -17,8 +17,8 @@ type UserSearchRequest struct {
 	Keyword string
 }
 
-/* This function searches an user in the database */
-func search_user() fiber.Handler {
+/* This function gets an user in the database */
+func get_user() fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		// Get keyword
 		keywordRequest := new(UserSearchRequest)
@@ -39,7 +39,7 @@ func search_user() fiber.Handler {
 			return err
 		}
 
-		// Search user by email
+		// Search by email
 		if match {
 			has, userModel, _, err := utils.CheckUser(keywordRequest.Keyword)
 			if err != nil {
@@ -60,10 +60,25 @@ func search_user() fiber.Handler {
 			})
 		}
 	
-		// Search user by name
+		// Search by username
 		if !match {
-			/* STILL WORKING ON HOW TO DO IT */
-			return nil
+			has, userModel, _, err := utils.CheckUserByUsername(keywordRequest.Keyword)
+			if err != nil {
+				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+					"error": "database error",
+				})
+			}
+
+			// User not found
+			if !has {
+				return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+					"error": "user not found",
+				})
+			}
+
+			return c.Status(fiber.StatusOK).JSON(fiber.Map{
+				"user": userModel,
+			})
 		}
 
 		return nil
