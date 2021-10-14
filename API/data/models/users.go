@@ -1,21 +1,19 @@
 package models
 
 type User struct {
-	Id        int64  `json:"-" validate:"required,number"`
-	Name      string `json:"-" validate:"required"`
-	Lastname  string `json:"-"`
-	Fullname  string `json:"fullname"`
-	Username  string `json:"username"`
-	Email     string `json:"email" validate:"required,email"`
-	Password  string `json:"-" validate:"required"`
-	AvatarId  int64  `json:"-" validate:"required,number"`
-	Validated bool   `json:"-"`
-}
-
-type UserAvatar struct {
-	OwnerId  int64  `json:"-" validate:"required,number"`
-	Id       int64  `json:"avatar_id" validate:"required,number"`
-	FileName string `json:"file_name" validate:"required"`
+	Id         int64  `json:"-" validate:"required,number"`
+	Name       string `json:"-" validate:"required"`
+	Lastname   string `json:"-"`
+	Fullname   string `json:"fullname"`
+	Username   string `json:"username"`
+	Email      string `json:"email" validate:"required,email"`
+	Password   string `json:"-" validate:"required"`
+	AvatarFile string `json:"avatar_file" validate:"required"`
+	AvatarUrl  string `json:"avatar_url" validate:"required"`
+	Validated  bool   `json:"-"`
+	Followers  int    `json:"followers"`
+	Following  int    `json:"following"`
+	Friends    int    `json:"friends"`
 }
 
 type AuthToken struct {
