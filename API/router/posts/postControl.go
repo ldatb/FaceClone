@@ -16,6 +16,7 @@ func PostsControlRouter(app fiber.Router, store session.Store) {
 	app.Post("/create-post-media", create_post_media(store))
 	app.Put("/change-post", change_post(store))
 	app.Delete("/delete-post", delete_post(store))
+	app.Post("/add-reaction", add_reaction(store))
 }
 
 type CreatePostRequest struct {
@@ -43,41 +44,51 @@ func create_post(store session.Store) fiber.Handler {
 		// Get token in header
 		token := c.Get("access_token")
 
-		// Check if user exists
-		has, userRequest, DBengine, err := utils.CheckUser(request.Email)
+		// Check if user exists and token is correct
+		hasUser, validToken, userModel, DBengine, _, err := utils.CheckUserAndToken(store, c, request.Email, token)
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"error": "database error",
 			})
 		}
-		if !has {
+		if !hasUser {
 			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 				"error": "invalid user",
 			})
 		}
-
-		// Check if token is correct
-		checkToken, _, err := utils.CheckToken(store, c, request.Email, token)
-		if err != nil {
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"error": "database error",
-			})
-		}
-		if !checkToken {
-			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+		if !validToken {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 				"error": "invalid token",
 			})
 		}
 
 		// Create post model
 		newPost := &models.Post{
-			OwnerId:     userRequest.Id,
+			OwnerId:     userModel.Id,
 			MediaId:     0,
 			Description: request.PostDescription,
 		}
 
 		// Put post in database
 		_, err = DBengine.Insert(newPost)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"error": "database error",
+			})
+		}
+
+		// Create post reactions model
+		newPostRections := &models.PostReactions{
+			PostId:  newPost.Id,
+			Likes:   0,
+			Hearts:  0,
+			Laughs:  0,
+			Sads:    0,
+			Angries: 0,
+		}
+
+		// Put post reactions in database
+		_, err = DBengine.Insert(newPostRections)
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"error": "database error",
@@ -114,28 +125,20 @@ func create_post_media(store session.Store) fiber.Handler {
 		// Get token in header
 		token := c.Get("access_token")
 
-		// Check if user exists
-		has, userRequest, _, err := utils.CheckUser(email)
+		// Check if user exists and token is correct
+		hasUser, validToken, userModel, _, _, err := utils.CheckUserAndToken(store, c, email, token)
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"error": "database error",
 			})
 		}
-		if !has {
+		if !hasUser {
 			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 				"error": "invalid user",
 			})
 		}
-		
-		// Check if token is correct
-		checkToken, _, err := utils.CheckToken(store, c, email, token)
-		if err != nil {
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"error": "database error",
-			})
-		}
-		if !checkToken {
-			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+		if !validToken {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 				"error": "invalid token",
 			})
 		}
@@ -162,7 +165,7 @@ func create_post_media(store session.Store) fiber.Handler {
 		}
 
 		// Check if user id is equal to the owner
-		if postRequest.OwnerId != userRequest.Id {
+		if postRequest.OwnerId != userModel.Id {
 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 				"error": "not the owner",
 			})
@@ -189,8 +192,8 @@ func create_post_media(store session.Store) fiber.Handler {
 
 		// Create Post Media model
 		newPostMedia := &models.PostMedia{
-			PostId: postRequest.Id,
-			OwnerId: postRequest.OwnerId,
+			PostId:   postRequest.Id,
+			OwnerId:  postRequest.OwnerId,
 			FileName: filename,
 		}
 
@@ -243,28 +246,20 @@ func change_post(store session.Store) fiber.Handler {
 		// Get token in header
 		token := c.Get("access_token")
 
-		// Check if user exists
-		has, userRequest, _, err := utils.CheckUser(request.Email)
+		// Check if user exists and token is correct
+		hasUser, validToken, userModel, _, _, err := utils.CheckUserAndToken(store, c, request.Email, token)
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"error": "database error",
 			})
 		}
-		if !has {
+		if !hasUser {
 			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 				"error": "invalid user",
 			})
 		}
-
-		// Check if token is correct
-		checkToken, _, err := utils.CheckToken(store, c, request.Email, token)
-		if err != nil {
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"error": "database error",
-			})
-		}
-		if !checkToken {
-			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+		if !validToken {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 				"error": "invalid token",
 			})
 		}
@@ -291,7 +286,7 @@ func change_post(store session.Store) fiber.Handler {
 		}
 
 		// Check if user id is equal to the owner
-		if postRequest.OwnerId != userRequest.Id {
+		if postRequest.OwnerId != userModel.Id {
 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 				"error": "not the owner",
 			})
@@ -337,28 +332,20 @@ func delete_post(store session.Store) fiber.Handler {
 		// Get token in header
 		token := c.Get("access_token")
 
-		// Check if user exists
-		has, userRequest, _, err := utils.CheckUser(request.Email)
+		// Check if user exists and token is correct
+		hasUser, validToken, userModel, _, _, err := utils.CheckUserAndToken(store, c, request.Email, token)
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"error": "database error",
 			})
 		}
-		if !has {
+		if !hasUser {
 			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 				"error": "invalid user",
 			})
 		}
-
-		// Check if token is correct
-		checkToken, _, err := utils.CheckToken(store, c, request.Email, token)
-		if err != nil {
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"error": "database error",
-			})
-		}
-		if !checkToken {
-			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+		if !validToken {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 				"error": "invalid token",
 			})
 		}
@@ -385,7 +372,7 @@ func delete_post(store session.Store) fiber.Handler {
 		}
 
 		// Check if user id is equal to the owner
-		if postRequest.OwnerId != userRequest.Id {
+		if postRequest.OwnerId != userModel.Id {
 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 				"error": "not the owner",
 			})
@@ -396,6 +383,54 @@ func delete_post(store session.Store) fiber.Handler {
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"error": "database error",
+			})
+		}
+
+		return c.SendStatus(fiber.StatusOK)
+	}
+}
+
+type AddReactionRequest struct {
+	Email    string
+	PostId   string
+	Reaction string
+}
+
+/* This function deletes a post */
+func add_reaction(store session.Store) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		// Get request
+		request := new(AddReactionRequest)
+
+		if err := c.BodyParser(request); err != nil {
+			return err
+		}
+
+		// Not enough values given
+		if request.Email == "" || request.PostId == "" || request.Reaction == "" {
+			return c.Status(fiber.StatusPartialContent).JSON(fiber.Map{
+				"error": "invalid credentials",
+			})
+		}
+
+		// Get token in header
+		token := c.Get("access_token")
+
+		// Check if user exists and token is correct
+		hasUser, validToken, _, _, _, err := utils.CheckUserAndToken(store, c, request.Email, token)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"error": "database error",
+			})
+		}
+		if !hasUser {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+				"error": "invalid user",
+			})
+		}
+		if !validToken {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+				"error": "invalid token",
 			})
 		}
 
