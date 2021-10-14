@@ -3,8 +3,8 @@ package Posts_router
 import (
 	"strconv"
 
-	"faceclone-api/utils"
 	"faceclone-api/data/models"
+	"faceclone-api/utils"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -76,7 +76,7 @@ func get_post() fiber.Handler {
 		}
 
 		return c.Status(fiber.StatusOK).JSON(fiber.Map{
-			"post": postRequest,
+			"post":     postRequest,
 			"comments": postCommentsRequest,
 		})
 	}
@@ -117,8 +117,18 @@ func get_user_posts() fiber.Handler {
 			})
 		}
 
+		// Get latest posts comments
+		var postComments []models.PostComments
+		err = DBengine.Table("post_comments ").Where("owner_id = ?", userRequest.Id).Desc("id").Find(&postComments)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"error": "database error",
+			})
+		}
+
 		return c.Status(fiber.StatusOK).JSON(fiber.Map{
-			"posts": posts,
+			"posts":         posts,
+			"post-comments": postComments,
 		})
 	}
 }
