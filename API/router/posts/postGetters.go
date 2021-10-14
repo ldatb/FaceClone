@@ -50,7 +50,7 @@ func get_post() fiber.Handler {
 		}
 
 		// Get username id
-		_, userRequest, _, err := utils.CheckUserByUsername(getUsername)
+		_, userRequest, _, err := utils.GetUserByUsername(getUsername)
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"error": "database error",
@@ -96,7 +96,7 @@ func get_user_posts() fiber.Handler {
 		}
 
 		// Check if user exists
-		has, userRequest, DBengine, err := utils.CheckUserByUsername(username)
+		has, userRequest, DBengine, err := utils.GetUserByUsername(username)
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"error": "database error",

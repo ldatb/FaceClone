@@ -11,6 +11,7 @@ import (
 func UserFriendsRouter(app fiber.Router, store session.Store) {
 	app.Post("/follow", follow(store))
 	app.Delete("/unfollow", unfollow(store))
+
 }
 
 type FollowRequest struct {
@@ -55,7 +56,7 @@ func follow(store session.Store) fiber.Handler {
 		}
 
 		// Check if username to follow exists
-		hasUserToFollow, followedUserModel, _, err := utils.CheckUserByUsername(request.Username)
+		hasUserToFollow, followedUserModel, _, err := utils.GetUserByUsername(request.Username)
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"error": "database error",
@@ -202,7 +203,7 @@ func unfollow(store session.Store) fiber.Handler {
 		}
 
 		// Check if username to unfollow exists
-		hasUserToUnfollow, unfollowedUserModel, _, err := utils.CheckUserByUsername(request.Username)
+		hasUserToUnfollow, unfollowedUserModel, _, err := utils.GetUserByUsername(request.Username)
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"error": "database error",

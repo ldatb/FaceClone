@@ -87,7 +87,7 @@ func register(store session.Store) fiber.Handler {
 		}
 
 		// Check if user exists
-		has, _, DBengine, err := utils.CheckUser(request.Email)
+		has, _, DBengine, err := utils.GetUser(request.Email)
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"error": "database error",
@@ -226,7 +226,7 @@ func validate() fiber.Handler {
 		}
 
 		// Check if user exists
-		has, userRequest, DBengine, err := utils.CheckUser(request.Email)
+		has, userRequest, DBengine, err := utils.GetUser(request.Email)
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"error": "database error",
@@ -290,7 +290,7 @@ func login(store session.Store) fiber.Handler {
 		}
 
 		// Check if user exists
-		has, userRequest, _, err := utils.CheckUser(request.Email)
+		has, userRequest, _, err := utils.GetUser(request.Email)
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"error": "database error",

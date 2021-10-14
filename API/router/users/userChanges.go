@@ -49,7 +49,7 @@ func forgot_password() fiber.Handler {
 		}
 
 		// Check if user exists
-		has, userRequest, DBengine, err := utils.CheckUser(request.Email)
+		has, userRequest, DBengine, err := utils.GetUser(request.Email)
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"error": "database error",
@@ -133,7 +133,7 @@ func change_forgot_password(store session.Store) fiber.Handler {
 		}
 
 		// Check if user exists
-		has, userRequest, DBengine, err := utils.CheckUser(request.Email)
+		has, userRequest, DBengine, err := utils.GetUser(request.Email)
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"error": "database error",
@@ -366,7 +366,7 @@ func change_username(store session.Store) fiber.Handler {
 		}
 
 		// Check if there's a user with this username
-		hasUsername, _, _, err := utils.CheckUserByUsername(new_username)
+		hasUsername, _, _, err := utils.GetUserByUsername(new_username)
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"error": "database error",
