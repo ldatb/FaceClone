@@ -36,6 +36,7 @@ func main() {
 	Users_router.UserAuthRouter(users_group, *store)
 	Users_router.UserChangesRouter(users_group, *store)
 	Users_router.UserGettersRouter(users_group)
+	Users_router.UserFriendsRouter(users_group, *store)
 
 	// Posts router
 	posts_group := app.Group("/posts")
