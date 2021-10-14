@@ -10,51 +10,6 @@ import (
 	"xorm.io/xorm"
 )
 
-
-func CheckUser(email string) (bool, *models.User, *xorm.Engine, error) {
-	// Connect to database
-	DBengine, err := data.CreateDBEngine()
-	if err != nil {
-		return false, nil, DBengine, err
-	}
-
-	// Get user
-	userRequest := new(models.User)
-	has, err := DBengine.Table("user").Where("email = ?", email).Desc("id").Get(userRequest)
-	if err != nil {
-		return false, userRequest, DBengine, err
-	}
-
-	// User not found
-	if !has {
-		return false, userRequest, DBengine, nil
-	}
-
-	return true, userRequest, DBengine, nil
-}
-
-func CheckUserByUsername(username string) (bool, *models.User, *xorm.Engine, error) {
-	// Connect to database
-	DBengine, err := data.CreateDBEngine()
-	if err != nil {
-		return false, nil, DBengine, err
-	}
-
-	// Get user
-	userRequest := new(models.User)
-	has, err := DBengine.Table("user").Where("username = ?", username).Desc("id").Get(userRequest)
-	if err != nil {
-		return false, userRequest, DBengine, err
-	}
-
-	// User not found
-	if !has {
-		return false, userRequest, DBengine, nil
-	}
-
-	return true, userRequest, DBengine, nil
-}
-
 func CheckPassword(given_email string, given_password string) (bool, error) {
 	// Connect to database
 	DBengine, err := data.CreateDBEngine()
@@ -95,7 +50,7 @@ func CheckToken(store session.Store, c *fiber.Ctx, email string, token string) (
 
 func CheckUserAndToken(store session.Store, c *fiber.Ctx, email string, token string) (bool, bool, *models.User, *xorm.Engine, *session.Session, error) {
 	// Check User
-	hasUser, userModel, DBengine, err := CheckUser(email)
+	hasUser, userModel, DBengine, err := GetUser(email)
 	if err != nil {
 		return false, false, userModel, DBengine, nil, err
 	}

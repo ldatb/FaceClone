@@ -3,8 +3,56 @@ package utils
 import (
 	"os"
 
+	"faceclone-api/data"
+	"faceclone-api/data/models"
+
 	"github.com/joho/godotenv"
+	"xorm.io/xorm"
 )
+
+func GetUser(email string) (bool, *models.User, *xorm.Engine, error) {
+	// Connect to database
+	DBengine, err := data.CreateDBEngine()
+	if err != nil {
+		return false, nil, DBengine, err
+	}
+
+	// Get user
+	userRequest := new(models.User)
+	has, err := DBengine.Table("user").Where("email = ?", email).Desc("id").Get(userRequest)
+	if err != nil {
+		return false, userRequest, DBengine, err
+	}
+
+	// User not found
+	if !has {
+		return false, userRequest, DBengine, nil
+	}
+
+	return true, userRequest, DBengine, nil
+}
+
+func GetUserByUsername(username string) (bool, *models.User, *xorm.Engine, error) {
+	// Connect to database
+	DBengine, err := data.CreateDBEngine()
+	if err != nil {
+		return false, nil, DBengine, err
+	}
+
+	// Get user
+	userRequest := new(models.User)
+	has, err := DBengine.Table("user").Where("username = ?", username).Desc("id").Get(userRequest)
+	if err != nil {
+		return false, userRequest, DBengine, err
+	}
+
+	// User not found
+	if !has {
+		return false, userRequest, DBengine, nil
+	}
+
+	return true, userRequest, DBengine, nil
+}
 
 func CreateAvatarUrl(filename string) (string, error) {
 	// Load url from .env
@@ -19,23 +67,18 @@ func CreateAvatarUrl(filename string) (string, error) {
 	return URL, nil
 }
 
-func Find(array []string, item string) bool {
-	for _, i := range array {
-		if i == item {
-			return true
-		}
-	}
-	return false
-}
-
-func FindAndDelete(array []string, item string) []string {
-	index := 0
-	for _, i := range array {
-		if i != item {
-			array[index] = i
-			index++
-		}
+func GetFriendsList(username string) (bool, *models.User, *models.UserFriends, error) {
+	hasUser, userModel, DBengine, err := GetUserByUsername(username)
+	if err != nil {
+		return hasUser, userModel, nil, err
 	}
 
-	return array[:index]
+	// Search User Friends
+	userFriendsRequest := new(models.UserFriends)
+	_, err = DBengine.Table("user_friends").Where("owner_id = ?", userModel.Id).Get(userFriendsRequest)
+	if err != nil {
+		return hasUser, userModel, userFriendsRequest, err
+	}
+
+	return hasUser, userModel, userFriendsRequest, nil
 }
