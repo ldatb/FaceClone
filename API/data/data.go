@@ -46,6 +46,9 @@ func CreateDBEngine() (*xorm.Engine, error) {
 	if err := engine.Sync(new(models.UserAvatar)); err != nil { // User avatar
 		return nil, err
 	}
+	if err := engine.Sync(new(models.UserReactedPosts)); err != nil { // User avatar
+		return nil, err
+	}
 
 	// Sync all Post related stuff
 	if err := engine.Sync(new(models.Post)); err != nil { // Posts
@@ -55,6 +58,9 @@ func CreateDBEngine() (*xorm.Engine, error) {
 		return nil, err
 	}
 	if err := engine.Sync(new(models.PostComments)); err != nil { // Post comments
+		return nil, err
+	}
+	if err := engine.Sync(new(models.PostReactions)); err != nil { // Post comments
 		return nil, err
 	}
 

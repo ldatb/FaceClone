@@ -21,3 +21,12 @@ type PostComments struct {
 	OwnerUsername string `json:"-" validate:"required"`
 	Comment       string `json:"comment" validate:"required"`
 }
+
+type PostReactions struct {
+	PostId  int64 `json:"post_id" validate:"required,number"`
+	Likes   int64 `json:"likes" validate:"number"`
+	Hearts  int64 `json:"hearts" validate:"number"`
+	Laughs  int64 `json:"laughs" validate:"number"`
+	Sads    int64 `json:"sads" validate:"number"`
+	Angries int64 `json:"angries" validate:"number"`
+}
