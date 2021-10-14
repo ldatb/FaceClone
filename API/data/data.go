@@ -56,13 +56,7 @@ func CreateDBEngine() (*xorm.Engine, error) {
 	if err := engine.Sync(new(models.Post)); err != nil { // Posts
 		return nil, err
 	}
-	if err := engine.Sync(new(models.PostMedia)); err != nil { // Post media
-		return nil, err
-	}
 	if err := engine.Sync(new(models.PostComments)); err != nil { // Post comments
-		return nil, err
-	}
-	if err := engine.Sync(new(models.PostReactions)); err != nil { // Post comments
 		return nil, err
 	}
 

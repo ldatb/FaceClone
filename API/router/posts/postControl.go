@@ -63,31 +63,20 @@ func create_post(store session.Store) fiber.Handler {
 
 		// Create post model
 		newPost := &models.Post{
+			//Id:          0,
 			OwnerId:     userModel.Id,
-			MediaId:     0,
+			MediaName:   "",
+			MediaUrl:    "",
 			Description: request.PostDescription,
+			Likes:       0,
+			Hearts:      0,
+			Laughs:      0,
+			Sads:        0,
+			Angries:     0,
 		}
 
 		// Put post in database
 		_, err = DBengine.Insert(newPost)
-		if err != nil {
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"error": "database error",
-			})
-		}
-
-		// Create post reactions model
-		newPostRections := &models.PostReactions{
-			PostId:  newPost.Id,
-			Likes:   0,
-			Hearts:  0,
-			Laughs:  0,
-			Sads:    0,
-			Angries: 0,
-		}
-
-		// Put post reactions in database
-		_, err = DBengine.Insert(newPostRections)
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"error": "database error",
@@ -171,7 +160,7 @@ func create_post_media(store session.Store) fiber.Handler {
 		}
 
 		// Check if this post already has a media (medias can't be changed)
-		if postRequest.MediaId != 0 {
+		if postRequest.MediaName != "" {
 			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 				"error": "post already has media",
 			})
@@ -188,25 +177,12 @@ func create_post_media(store session.Store) fiber.Handler {
 		// Save file
 		filename := strconv.Itoa(int(postRequest.OwnerId)) + "_" + strconv.Itoa(int(postRequest.Id)) + "_" + media.Filename
 		c.SaveFile(media, fmt.Sprintf("./media/post_media/%s", filename))
-
-		// Create Post Media model
-		newPostMedia := &models.PostMedia{
-			PostId:   postRequest.Id,
-			OwnerId:  postRequest.OwnerId,
-			FileName: filename,
-		}
-
-		// Put media in database
-		_, err = DBengine.Insert(newPostMedia)
-		if err != nil {
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"error": "database error",
-			})
-		}
+		mediaURL, _ := utils.CreatePostMediaUrl(filename)
 
 		// Update post media id
-		postRequest.MediaId = newPostMedia.Id
-		_, err = DBengine.Where("post_id = ?", postRequest.Id).Cols("media_id").Update(postRequest)
+		postRequest.MediaName = filename
+		postRequest.MediaUrl = mediaURL
+		_, err = DBengine.Table("post").Where("post_id = ?", postRequest.Id).Cols("media_name", "media_url").Update(postRequest)
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"error": "database error",
@@ -214,7 +190,7 @@ func create_post_media(store session.Store) fiber.Handler {
 		}
 
 		return c.Status(fiber.StatusOK).JSON(fiber.Map{
-			"post_media": newPostMedia,
+			"post_media_url": mediaURL,
 		})
 	}
 }

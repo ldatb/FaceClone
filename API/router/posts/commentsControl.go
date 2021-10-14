@@ -85,7 +85,6 @@ func create_comment(store session.Store) fiber.Handler {
 		newComment := &models.PostComments{
 			PostId:        postId,
 			OwnerUsername: userModel.Username,
-			OwnerId:       userModel.Id,
 			Comment:       request.Comment,
 		}
 

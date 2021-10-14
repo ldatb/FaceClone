@@ -64,18 +64,6 @@ func get_post() fiber.Handler {
 			})
 		}
 
-		// Get post media
-		hasMedia, postMediaRequest, _, err := utils.GetPostMedia(postId)
-		if err != nil {
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"error": "database error",
-			})
-		}
-		mediaUrl, _ := utils.CreatePostMediaUrl(postMediaRequest.FileName)
-		if !hasMedia {
-			mediaUrl = ""
-		}
-
 		// Get post comments
 		hasComments, postCommentsRequest, _, err := utils.GetPostComments(postId)
 		if err != nil {
@@ -89,7 +77,6 @@ func get_post() fiber.Handler {
 
 		return c.Status(fiber.StatusOK).JSON(fiber.Map{
 			"post": postRequest,
-			"media": mediaUrl,
 			"comments": postCommentsRequest,
 		})
 	}

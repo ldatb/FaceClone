@@ -87,15 +87,6 @@ func react(store session.Store) fiber.Handler {
 			})
 		}
 
-		// Get post reactions
-		postReactions := new(models.PostReactions)
-		_, err = DBengine.Table("post_reactions").Where("post_id = ?", postRequest.Id).Get(postReactions)
-		if err != nil {
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"error": "database error",
-			})
-		}
-
 		// Check if user already has reacted this post
 		userReactedPosts := new(models.UserReactedPosts)
 		hasReacted, err := DBengine.Table("user_reacted_posts").Where("owner_id = ?", userModel.Id).And("post_id = ?", postRequest.Id).Get(userReactedPosts)
@@ -110,29 +101,29 @@ func react(store session.Store) fiber.Handler {
 			// Subtract reaction in post
 			switch userReactedPosts.Reaction {
 			case "like":
-				postReactions.Likes--
+				postRequest.Likes--
 			case "heart":
-				postReactions.Hearts--
+				postRequest.Hearts--
 			case "laugh":
-				postReactions.Laughs--
+				postRequest.Laughs--
 			case "sad":
-				postReactions.Sads--
+				postRequest.Sads--
 			case "angry":
-				postReactions.Angries--
+				postRequest.Angries--
 			}
 
 			// Add reaction in post
 			switch request.Reaction {
 			case "like":
-				postReactions.Likes++
+				postRequest.Likes++
 			case "heart":
-				postReactions.Hearts++
+				postRequest.Hearts++
 			case "laugh":
-				postReactions.Laughs++
+				postRequest.Laughs++
 			case "sad":
-				postReactions.Sads++
+				postRequest.Sads++
 			case "angry":
-				postReactions.Angries++
+				postRequest.Angries++
 			}
 
 			// Update on user reacted posts
@@ -145,7 +136,7 @@ func react(store session.Store) fiber.Handler {
 			}
 
 			// Update on post reactions
-			_, err = DBengine.Table("post_reactions").Where("post_id = ?", postReactions.PostId).AllCols().Update(postReactions)
+			_, err = DBengine.Table("post").Where("id = ?", postRequest.Id).AllCols().Update(postRequest)
 			if err != nil {
 				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 					"error": "database error",
@@ -155,22 +146,22 @@ func react(store session.Store) fiber.Handler {
 			// Return
 			return c.Status(fiber.StatusOK).JSON(fiber.Map{
 				"user_reaction": userReactedPosts,
-				"post_reactions": postReactions,
+				"post": postRequest,
 			})
 
 		} else { // Has not reacted, so we have to create the reaction of the user and the post
 			// Add reaction in post
 			switch request.Reaction {
 			case "like":
-				postReactions.Likes++
+				postRequest.Likes++
 			case "heart":
-				postReactions.Hearts++
+				postRequest.Hearts++
 			case "laugh":
-				postReactions.Laughs++
+				postRequest.Laughs++
 			case "sad":
-				postReactions.Sads++
+				postRequest.Sads++
 			case "angry":
-				postReactions.Angries++
+				postRequest.Angries++
 			}
 
 			// Create user reaction
@@ -187,7 +178,7 @@ func react(store session.Store) fiber.Handler {
 					"error": "database error",
 				})
 			}
-			_, err = DBengine.Table("post_reactions").Where("post_id = ?", postReactions.PostId).AllCols().Update(postReactions)
+			_, err = DBengine.Table("post").Where("id = ?", postRequest.Id).AllCols().Update(postRequest)
 			if err != nil {
 				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 					"error": error(err),
@@ -197,7 +188,7 @@ func react(store session.Store) fiber.Handler {
 			// Return
 			return c.Status(fiber.StatusOK).JSON(fiber.Map{
 				"user_reaction": newUserReaction,
-				"post_reactions": postReactions,
+				"post": postRequest,
 			})
 		}
 	}
@@ -268,15 +259,6 @@ func remove_reaction(store session.Store) fiber.Handler {
 			})
 		}
 
-		// Get post reactions
-		postReactions := new(models.PostReactions)
-		_, err = DBengine.Table("post_reactions").Where("post_id = ?", postRequest.Id).Get(postReactions)
-		if err != nil {
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"error": "database error",
-			})
-		}
-
 		// Check if user already reacted this post
 		userReactedPosts := new(models.UserReactedPosts)
 		hasReacted, err := DBengine.Table("user_reacted_posts").Where("owner_id = ?", userModel.Id).And("post_id = ?", postRequest.Id).Get(userReactedPosts)
@@ -294,19 +276,19 @@ func remove_reaction(store session.Store) fiber.Handler {
 		// Subtract reaction in post
 		switch userReactedPosts.Reaction {
 		case "like":
-			postReactions.Likes--
+			postRequest.Likes--
 		case "heart":
-			postReactions.Hearts--
+			postRequest.Hearts--
 		case "laugh":
-			postReactions.Laughs--
+			postRequest.Laughs--
 		case "sad":
-			postReactions.Sads--
+			postRequest.Sads--
 		case "angry":
-			postReactions.Angries--
+			postRequest.Angries--
 		}
 
 		// Update on post reactions
-		_, err = DBengine.Table("post_reactions").Where("post_id = ?", postReactions.PostId).AllCols().Update(postReactions)
+		_, err = DBengine.Table("post").Where("id = ?", postRequest.Id).AllCols().Update(postRequest)
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"error": "database error",

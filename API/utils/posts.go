@@ -32,28 +32,6 @@ func GetPost(id int64) (bool, *models.Post, *xorm.Engine, error) {
 	return true, postRequest, DBengine, nil
 }
 
-func GetPostMedia(id int64) (bool, *models.PostMedia, *xorm.Engine, error) {
-	// Connect to database
-	DBengine, err := data.CreateDBEngine()
-	if err != nil {
-		return false, nil, DBengine, err
-	}
-
-	// Get post
-	postMediaRequest := new(models.PostMedia)
-	has, err := DBengine.Table("post_media").Where("id = ?", id).Desc("id").Get(postMediaRequest)
-	if err != nil {
-		return false, postMediaRequest, DBengine, err
-	}
-
-	// Post not found
-	if !has {
-		return false, postMediaRequest, DBengine, nil
-	}
-
-	return true, postMediaRequest, DBengine, nil
-}
-
 func GetPostComments(id int64) (bool, []models.PostComments, *xorm.Engine, error) {
 	// Connect to database
 	DBengine, err := data.CreateDBEngine()
