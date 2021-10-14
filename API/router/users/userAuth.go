@@ -360,28 +360,20 @@ func logout(store session.Store) fiber.Handler {
 		// Check token in header
 		token := c.Get("access_token")
 
-		// Check if user exists
-		has, userRequest, _, err := utils.CheckUser(request.Email)
+		// Check if user exists and token is correct
+		hasUser, validToken, userModel, _, sess, err := utils.CheckUserAndToken(store, c, request.Email, token)
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"error": "database error",
 			})
 		}
-		if !has {
+		if !hasUser {
 			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 				"error": "invalid user",
 			})
 		}
-
-		// Check if token is correct
-		checkToken, sess, err := utils.CheckToken(store, c, request.Email, token)
-		if err != nil {
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"error": "database error",
-			})
-		}
-		if !checkToken {
-			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+		if !validToken {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 				"error": "invalid token",
 			})
 		}
@@ -393,7 +385,7 @@ func logout(store session.Store) fiber.Handler {
 		}
 
 		return c.Status(fiber.StatusOK).JSON(fiber.Map{
-			"user": userRequest,
+			"user": userModel,
 			"token": token,
 		})
 	}
