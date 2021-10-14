@@ -35,7 +35,7 @@ func main() {
 	users_group.Static("/avatar", "./media/avatar")
 	Users_router.UserAuthRouter(users_group, *store)
 	Users_router.UserChangesRouter(users_group, *store)
-	Users_router.UserGettersRouter(users_group)
+	Users_router.UserGettersRouter(users_group, *store)
 	Users_router.UserFriendsRouter(users_group, *store)
 
 	// Posts router
