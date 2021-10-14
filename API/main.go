@@ -43,6 +43,7 @@ func main() {
 	Posts_router.PostsControlRouter(posts_group, *store)
 	Posts_router.PostsGettersRouter(posts_group)
 	Posts_router.CommentsControlRouter(posts_group, *store)
+	Posts_router.ReactionControlRouter(posts_group, *store)
 
 	// 404 Handler
 	app.Use(func(c *fiber.Ctx) error {
