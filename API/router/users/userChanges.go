@@ -337,7 +337,7 @@ func change_username(store session.Store) fiber.Handler {
 		}
 
 		// Prepare username
-		new_username := strings.ReplaceAll(strings.ToLower(request.New_Username), " ", "")
+		new_username := strings.TrimSpace(request.New_Username)
 
 		// Get token in header
 		token := c.Get("access_token")
@@ -441,27 +441,20 @@ func change_avatar(store session.Store) fiber.Handler {
 			})
 		}
 
-		// Get user_avatar instance in database
-		userAvatarRequest := new(models.UserAvatar)
-		hasAvatar, err := DBengine.Table("user_avatar").Where("owner_id = ?", userModel.Id).Desc("id").Get(userAvatarRequest)
-		if err != nil {
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"error": "database error",
-			})
-		}
-		if !hasAvatar {
-			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-				"error": "invalid user avatar",
-			})
-		}
-
 		// Save file
 		filename := strconv.Itoa(int(userModel.Id)) + "_" + avatar.Filename
 		c.SaveFile(avatar, fmt.Sprintf("./media/avatar/%s", filename))
+		avatarURL, err := utils.CreateAvatarUrl(filename)
+		if err != nil {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+				"error": "invalid image",
+			})
+		}
 
 		// Update user_avatar in database
-		userAvatarRequest.FileName = filename
-		_, err = DBengine.ID(userAvatarRequest.Id).Cols("file_name").Update(userAvatarRequest)
+		userModel.AvatarFile = filename
+		userModel.AvatarUrl = avatarURL
+		_, err = DBengine.Where("id = ?", userModel.Id).Cols("avatar_file", "avatar_url").Update(userModel)
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"error": "database error",
@@ -470,7 +463,6 @@ func change_avatar(store session.Store) fiber.Handler {
 
 		return c.Status(fiber.StatusOK).JSON(fiber.Map{
 			"user": userModel,
-			"user_avatar": userAvatarRequest,
 		})
 	}
 }
@@ -484,7 +476,6 @@ func delete_avatar(store session.Store) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		// Get request
 		request := new(DeleteAvatarRequest)
-
 		if err := c.BodyParser(request); err != nil {
 			return err
 		}
@@ -517,23 +508,13 @@ func delete_avatar(store session.Store) fiber.Handler {
 			})
 		}
 
-		// Get user_avatar instance in database
-		userAvatarRequest := new(models.UserAvatar)
-		has, err := DBengine.Table("user_avatar").Where("owner_id = ?", userModel.Id).Desc("id").Get(userAvatarRequest)
-		if err != nil {
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"error": "database error",
-			})
-		}
-		if !has {
-			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-				"error": "invalid user avatar",
-			})
-		}
+		// Get new avatar url
+		avatarURL, _ := utils.CreateAvatarUrl("base_avatar.png")
 
 		// Update user_avatar in database
-		userAvatarRequest.FileName = "base_avatar.png"
-		_, err = DBengine.ID(userAvatarRequest.Id).Cols("file_name").Update(userAvatarRequest)
+		userModel.AvatarFile = "base_avatar.png"
+		userModel.AvatarUrl = avatarURL
+		_, err = DBengine.Where("id = ?", userModel.Id).Cols("avatar_file", "avatar_url").Update(userModel)
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"error": "database error",
@@ -542,7 +523,6 @@ func delete_avatar(store session.Store) fiber.Handler {
 
 		return c.Status(fiber.StatusOK).JSON(fiber.Map{
 			"user": userModel,
-			"user_avatar": userAvatarRequest,
 		})
 	}
 }

@@ -3,6 +3,7 @@ package User_router
 import (
 	"fmt"
 	"os"
+	"strings"
 	"time"
 
 	"faceclone-api/data/models"
@@ -105,37 +106,36 @@ func register(store session.Store) fiber.Handler {
 		}
 
 		// Create and insert the new user in the database
+		avatarURL, _ := utils.CreateAvatarUrl("base_avatar.png")
 		newUser := &models.User{
-			Name:      request.Name,
-			Lastname:  request.Lastname,
-			Fullname:  request.Name + " " + request.Lastname,
-			Username: request.Name + request.Lastname,
-			Email:     request.Email,
-			Password:  string(hashPass),
-			Validated: false,
+			//Id:         0,
+			Name:       request.Name,
+			Lastname:   request.Lastname,
+			Fullname:   request.Name + " " + request.Lastname,
+			Username:   strings.TrimSpace(request.Name + request.Lastname),
+			Email:      request.Email,
+			Password:   string(hashPass),
+			AvatarFile: "base_avatar.png",
+			AvatarUrl:  avatarURL,
+			Validated:  false,
+			Followers:  0,
+			Following:  0,
 		}
 		_, err = DBengine.Insert(newUser)
 		if err != nil {
 			return err
 		}
 
-		// Create user avatar (basic)
-		newUserAvatar := &models.UserAvatar{
-			OwnerId: newUser.Id,
-			FileName: "base_avatar.png",
+		// Create Friends table
+		newFriends := &models.UserFriends{
+			OwnerId:   newUser.Id,
+			Followers: make([]string, 0),
+			Following: make([]string, 0),
+			Friends:   make([]string, 0),
 		}
-		_, err = DBengine.Insert(newUserAvatar)
+		_, err = DBengine.Insert(newFriends)
 		if err != nil {
 			return err
-		}
-
-		// Update user with avatar id
-		newUser.AvatarId = newUserAvatar.Id
-		_, err = DBengine.ID(newUser.Id).Cols("avatar_id").Update(newUser)
-		if err != nil {
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"error": "database error",
-			})
 		}
 
 		// Generate and insert an auth token in the database
@@ -204,7 +204,7 @@ func register(store session.Store) fiber.Handler {
 }
 
 type ValidadeRequest struct {
-	Email string
+	Email   string
 	AuthKey string
 }
 
@@ -385,7 +385,7 @@ func logout(store session.Store) fiber.Handler {
 		}
 
 		return c.Status(fiber.StatusOK).JSON(fiber.Map{
-			"user": userModel,
+			"user":  userModel,
 			"token": token,
 		})
 	}

@@ -43,10 +43,12 @@ func CreateDBEngine() (*xorm.Engine, error) {
 	if err := engine.Sync(new(models.AuthToken)); err != nil { // User auth token
 		return nil, err
 	}
-	if err := engine.Sync(new(models.UserAvatar)); err != nil { // User avatar
+	if err := engine.Sync(new(models.UserReactedPosts)); err != nil { // User avatar
 		return nil, err
 	}
-	if err := engine.Sync(new(models.UserReactedPosts)); err != nil { // User avatar
+
+	// Sync all Friends related stuff
+	if err := engine.Sync(new(models.UserFriends)); err != nil { // Friends
 		return nil, err
 	}
 

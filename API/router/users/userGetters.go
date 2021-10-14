@@ -10,7 +10,6 @@ import (
 
 func UserGettersRouter(app fiber.Router) {
 	app.Get("/user", search_user())
-	app.Get("/avatar/:user_id", get_avatar())
 }
 
 
@@ -42,7 +41,7 @@ func search_user() fiber.Handler {
 
 		// Search user by email
 		if match {
-			has, userRequest, _, err := utils.CheckUser(keywordRequest.Keyword)
+			has, userModel, _, err := utils.CheckUser(keywordRequest.Keyword)
 			if err != nil {
 				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 					"error": "database error",
@@ -55,33 +54,9 @@ func search_user() fiber.Handler {
 					"error": "user not found",
 				})
 			}
-			
-			// Get user avatar
-			hasAvatar, userAvatarRequest, _, err := utils.GetAvatar(userRequest.Id)
-			if err != nil {
-				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-					"error": "database error",
-				})
-			}
-
-			// Avatar not found
-			if !hasAvatar {
-				return c.Status(fiber.StatusBadGateway).JSON(fiber.Map{
-					"error": "user not found",
-				})
-			}
-			
-			// Get user avatar url
-			avatarURL, err := utils.CreateAvatarUrl(userAvatarRequest.FileName)
-			if err != nil {
-				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-					"error": "database error",
-				})
-			}
 
 			return c.Status(fiber.StatusOK).JSON(fiber.Map{
-				"user": userRequest,
-				"avatar_url": avatarURL,
+				"user": userModel,
 			})
 		}
 	
@@ -92,48 +67,5 @@ func search_user() fiber.Handler {
 		}
 
 		return nil
-	}
-}
-
-/* This function fetches and displays an user's avatar */
-func get_avatar() fiber.Handler {
-	return func(c *fiber.Ctx) error {
-		// Get user id
-		user_id, err := c.ParamsInt("user_id")
-		
-		// Invalid user id
-		if err != nil {
-			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-				"error": "invalid id",
-			})	
-		}
-		
-		// Get user avatar
-		has, userAvatarRequest, _, err := utils.GetAvatar(int64(user_id))
-		if err != nil {
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"error": "database error",
-			})
-		}
-
-		// Avatar not found
-		if !has {
-			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-				"error": "invalid user",
-			})
-		}
-		
-		// Get image url
-		URL, err := utils.CreateAvatarUrl(userAvatarRequest.FileName)
-		if err != nil {
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"error": "database error",
-			})
-		}
-
-		// Show user avatar
-		return c.Status(fiber.StatusOK).JSON(fiber.Map{
-			"url": URL,
-		})
 	}
 }
