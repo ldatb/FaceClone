@@ -108,7 +108,7 @@ func get_user_posts() fiber.Handler {
 			})
 		}
 
-		// Get latest 10 posts
+		// Get latest posts
 		var posts []models.Post
 		err = DBengine.Table("post").Where("owner_id = ?", userRequest.Id).Desc("id").Find(&posts)
 		if err != nil {
