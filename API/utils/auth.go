@@ -27,7 +27,7 @@ func ValidateAuthKey(email string, token string) (bool, error) {
 
 	// Search the user token
 	// The CheckUser function is not being used because the tables are different
-	authRequest := new(models.AuthToken)
+	authRequest := new(models.UserAuthToken)
 	authDb, err := DBengine.Table("auth_token").Where("email = ?", email).Get(authRequest)
 	if err != nil {
 		return false, err

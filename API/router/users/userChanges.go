@@ -3,8 +3,8 @@ package User_router
 import (
 	"fmt"
 	"os"
-	"strings"
 	"strconv"
+	"strings"
 
 	"faceclone-api/data/models"
 	"faceclone-api/utils"
@@ -63,7 +63,7 @@ func forgot_password() fiber.Handler {
 
 		// Generate and insert the auth token in the database
 		token, _ := utils.GenerateAuthKey()
-		newToken := &models.AuthToken{
+		newToken := &models.UserAuthToken{
 			Email:       request.Email,
 			AccessToken: token,
 			TokenType:   "forgot password",
@@ -316,7 +316,7 @@ func change_name(store session.Store) fiber.Handler {
 type ChangeUsernameRequest struct {
 	Email        string
 	Password     string
-	New_Username     string
+	New_Username string
 }
 
 /* This function changes a User's username */
@@ -391,7 +391,6 @@ func change_username(store session.Store) fiber.Handler {
 		})
 	}
 }
-
 
 /* This function changes an user avatar */
 func change_avatar(store session.Store) fiber.Handler {
@@ -468,7 +467,7 @@ func change_avatar(store session.Store) fiber.Handler {
 }
 
 type DeleteAvatarRequest struct {
-	Email        string
+	Email string
 }
 
 /* This function deletes an user avatar and sets it to the base one */
