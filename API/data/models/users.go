@@ -14,6 +14,8 @@ type User struct {
 	Followers  int    `json:"followers"`
 	Following  int    `json:"following"`
 	Friends    int    `json:"friends"`
+
+
 }
 
 type UserFriends struct {
@@ -23,7 +25,7 @@ type UserFriends struct {
 	Friends   []string `json:"friends"`
 }
 
-type AuthToken struct {
+type UserAuthToken struct {
 	Email       string `json:"email" validate:"required,email"`
 	AccessToken string `json:"access_token" validate:"required"`
 	TokenType   string `json:"token_type" validate:"required"`
