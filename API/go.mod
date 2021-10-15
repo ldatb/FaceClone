@@ -5,6 +5,7 @@ go 1.17
 require (
 	github.com/gofiber/fiber/v2 v2.20.1
 	github.com/gofiber/storage/postgres v0.0.0-20210922062006-ff033d0e0e86
+	github.com/gofiber/websocket/v2 v2.0.12
 	github.com/golang-jwt/jwt/v4 v4.1.0
 	github.com/joho/godotenv v1.4.0
 	github.com/lib/pq v1.10.3
@@ -15,6 +16,7 @@ require (
 
 require (
 	github.com/andybalholm/brotli v1.0.3 // indirect
+	github.com/fasthttp/websocket v1.4.3-rc.9 // indirect
 	github.com/goccy/go-json v0.7.9 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
@@ -23,6 +25,7 @@ require (
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/onsi/ginkgo v1.16.4 // indirect
 	github.com/onsi/gomega v1.15.0 // indirect
+	github.com/savsgio/gotils v0.0.0-20210921075833-21a6215cb0e4 // indirect
 	github.com/syndtr/goleveldb v1.0.0 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasthttp v1.30.0 // indirect
