@@ -40,15 +40,21 @@ func CreateDBEngine() (*xorm.Engine, error) {
 	if err := engine.Sync(new(models.User)); err != nil { // User general
 		return nil, err
 	}
-	if err := engine.Sync(new(models.AuthToken)); err != nil { // User auth token
+	if err := engine.Sync(new(models.UserAuthToken)); err != nil { // User auth token
 		return nil, err
 	}
 	if err := engine.Sync(new(models.UserReactedPosts)); err != nil { // User avatar
 		return nil, err
 	}
-
-	// Sync all Friends related stuff
 	if err := engine.Sync(new(models.UserFriends)); err != nil { // Friends
+		return nil, err
+	}
+
+	// Sync all Chat related stuff
+	if err := engine.Sync(new(models.Chat)); err != nil { // Chat general
+		return nil, err
+	}
+	if err := engine.Sync(new(models.ChatMessages)); err != nil { // Chat messages
 		return nil, err
 	}
 
