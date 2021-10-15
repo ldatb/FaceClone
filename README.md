@@ -11,3 +11,13 @@ The API for this project was done in [Go - Fiber](https://docs.gofiber.io/), a G
 3. Create a [MailTrap](https://mailtrap.io/) account, which is the email service provider.
 4. Create your .env file, use .env.example to guide you.
 5. Run with `go run main.go`
+
+## 2 Webpage (Front-end)
+The webpage for this project was done using [Vue-Nuxt](https://nuxtjs.org/) and the [Atomic Design principles by Brad Frost](https://atomicdesign.bradfrost.com/)
+
+### 1.2 Webpage installation
+For specific instructions read the README.md file inside the Webpage folder
+1. Install dependencies using `npm install`
+2. Serve with host at port 3000 with `npm run dev`
+3. Run with `npm run build` and `npm run start`
+4. You can also generate a static page (not recommended since it was made with the intention of being a server-side dynamic webpage) with `npm run generate`
