@@ -9,9 +9,18 @@ type Chat struct {
 }
 
 type ChatMessages struct {
-	Id     int64     `json:"message-id" validate:"required,number"`
-	ChatId int64     `json:"chat-id" validate:"required,number"`
-	Time   time.Time `json:"time" validate:"required,number"`
-	UserId int64     `json:"-" validate:"required,number"`
-	Content string `json:"content" validate:"required"`
+	Id      int64     `json:"-" validate:"required,number"`
+	ChatId  int64     `json:"-" validate:"required,number"`
+	Time    time.Time `json:"time" validate:"required,number"`
+	UserId  int64     `json:"-" validate:"required,number"`
+	Content string    `json:"content" validate:"required"`
+}
+
+type ChatImages struct {
+	Id        int64     `json:"-" validate:"required,number"`
+	ChatId    int64     `json:"-" validate:"required,number"`
+	Time      time.Time `json:"time" validate:"required,number"`
+	UserId    int64     `json:"-" validate:"required,number"`
+	ImageName string    `json:"image-name" validate:"required"`
+	ImageDir  string    `json:"image-dir" validate:"required"`
 }

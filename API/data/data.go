@@ -57,6 +57,9 @@ func CreateDBEngine() (*xorm.Engine, error) {
 	if err := engine.Sync(new(models.ChatMessages)); err != nil { // Chat messages
 		return nil, err
 	}
+	if err := engine.Sync(new(models.ChatImages)); err != nil { // Chat images
+		return nil, err
+	}
 
 	// Sync all Post related stuff
 	if err := engine.Sync(new(models.Post)); err != nil { // Posts
