@@ -4,6 +4,7 @@ import (
 	"faceclone-api/data"
 	Users_router "faceclone-api/router/users"
 	Posts_router "faceclone-api/router/posts"
+	Chat_router "faceclone-api/router/chat"
 	"fmt"
 	"log"
 	"os"
@@ -37,6 +38,13 @@ func main() {
 	Users_router.UserChangesRouter(users_group, *store)
 	Users_router.UserGettersRouter(users_group, *store)
 	Users_router.UserFriendsRouter(users_group, *store)
+
+	// Chat router
+	chat_group := app.Group("/chat")
+	chat_group.Static("/media", "./media/chat_media")
+	Chat_router.WebsocketRouter(chat_group, *store)
+	Chat_router.ChatControlRouter(chat_group, *store)
+	Chat_router.ChatMediaRouter(chat_group, *store)
 
 	// Posts router
 	posts_group := app.Group("/posts")
