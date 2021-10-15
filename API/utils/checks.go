@@ -64,6 +64,22 @@ func CheckUserAndToken(store session.Store, c *fiber.Ctx, email string, token st
 	return hasUser, validToken, userModel, DBengine, sess, nil
 }
 
+func CheckUsernameAndToken(store session.Store, c *fiber.Ctx, username string, token string) (bool, bool, *models.User, *xorm.Engine, *session.Session, error) {
+	// Check User
+	hasUser, userModel, DBengine, err := GetUserByUsername(username)
+	if err != nil {
+		return false, false, userModel, DBengine, nil, err
+	}
+
+	// Check token
+	validToken, sess, err := CheckToken(store, c, userModel.Email, token)
+	if err != nil {
+		return false, false, userModel, DBengine, sess, err
+	}
+
+	return hasUser, validToken, userModel, DBengine, sess, nil
+}
+
 func CheckAll(email string, password string, token string, store session.Store, c *fiber.Ctx) (bool, bool, bool, *models.User, *xorm.Engine, *session.Session, error) {
 	// Connect to database
 	DBengine, err := data.CreateDBEngine()
