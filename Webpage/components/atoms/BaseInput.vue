@@ -31,12 +31,11 @@ export default Vue.extend({
 
 <style lang='scss' scoped>
 input {
+    outline: none;
     background: color(dark, shade1);
-    border-radius: 1.5rem;
-    color: color(white);
-    width: max-content;
-    min-height: 2.3rem;
-    padding-left: 1rem;
-    padding-right: 1rem;
+    border-radius: 20px;
+    min-height: 2.25rem;
+    width: 100%;
+    padding: 0 1rem;
 }
 </style>

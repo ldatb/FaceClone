@@ -1,15 +1,15 @@
 <template>
-    <span class="status-badge" :class="handleStatus"></span>
+    <span class="status-badge" :class="handleStatus" ></span>
 </template>
 
 <script lang="ts">
 import Vue from 'vue'
 export default Vue.extend({
     props: {
-        // eslint-disable-next-line vue/require-default-prop
         status: {
-            type: String
-        }
+            type: String,
+            required: true,
+        },
     },
     computed: {
         handleStatus(): object {
@@ -26,21 +26,21 @@ export default Vue.extend({
 
 <style lang="scss" scoped>
 .status-badge {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
     position: absolute;
-    width: 0.75rem;
-    height: 0.75rem;
     bottom: 1px;
     right: -1px;
     border: 2px solid #18232f;
-    border-radius: 50%;
 }
 .status-online {
-  background: color(green);
+    background: color(green);
 }
 .status-busy {
-  background: color(red);
+    background: color(red);
 }
 .status-offline {
-  background: color(gray, shade2);
+    background: color(gray, shade2);
 }
 </style>

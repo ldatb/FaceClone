@@ -1,42 +1,15 @@
-$colors: (
-  dark: (
-    base: #152330,
-    shade1: #17293b,
-    shade2: #1f354d
-  ),
-  gray: (
-    base: #667c95,
-    shade1: #98a9bc,
-    shade2: #6a7c93
-  ),
-  white: (
-    base: #f4f6f8,
-    shade1: #fff
-  ),
-  blue: (
-    base: #4589f7,
-    shade1: #1aafff,
-    shade2: #2b6cd6
-  ),
-  green: (
-    base: #1bd672
-  ),
-  red: (
-    base: #e52c65
-  )
-) !default;
+<template>
+  <div class="full-screen-container">
+    <slot />
+  </div>
+</template>
 
-@function color($color, $complementary: null) {
-  @if map-has-key($colors, $color) {
-    $type: map-get($colors, $color);
-    @if $complementary == null {
-      @if type-of($type) == map {
-        @return map-get(map-get($colors, $color), 'base');
-      } @else {
-        @return map-get($colors, $color);
-      }
-    } @else {
-      @return map-get(map-get($colors, $color), $complementary);
-    }
-  }
+<style lang="scss" scoped>
+.full-screen-container {
+  max-width: 1460px;
+  height: 100%;
+  position: relative;
+  margin: 0 auto;
+  display: grid;
 }
+</style>

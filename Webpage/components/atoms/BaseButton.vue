@@ -1,5 +1,7 @@
 <template>
-    <NuxtLink v-if="btnLink" class="base-button" :to="link">{{ text }}></NuxtLink>
+    <NuxtLink v-if="btnlink" class="button-link" :to="link">
+        {{ text }}
+    </NuxtLink>
     <button v-else @click="$emit('click')">
         {{ text }}
     </button>
@@ -11,35 +13,36 @@ export default Vue.extend({
     props: {
         text: {
             type: String,
-            required: true
+            required: true,
         },
         link: {
             type: String,
-            default: "error"
+            required: false,
+            default: "/",
         },
-        btnLink: {
+        btnlink: {
             type: Boolean,
-            default: false
-        }
-    }
+            default: false,
+        },
+    },
 })
 </script>
 
 <style lang='scss' scoped>
-button, .base-button {
+button, .button-link {
     background: color(blue);
     color: color(white);
-    padding: 0.6rem 0;
-    min-height: 2.3rem;
+    padding: 0.6rem 1rem;
+    min-width: 2.3rem;
     display: grid;
     align-items: center;
     justify-content: center;
-    border-radius: 1.5rem;
+    border-radius: 1.25rem;
     font-size: 0.97rem;
     transition: all 300ms ease;
     cursor: pointer;
     &:hover {
-        box-shadow: 0px 2px 11px -2px rgba(69, 137, 247, 0.8);
+        box-shadow: 0px 2px 11px -2px rgba(69, 137, 247, 0.45);
     }
     &:active {
         background: color(blue, shade2);
