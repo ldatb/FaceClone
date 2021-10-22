@@ -20,7 +20,7 @@ export default {
   css: ['normalize.css/normalize.css', '@/assets/scss/base.scss'],
 
   // Plugins to run before rendering page: https://go.nuxtjs.dev/config-plugins
-  plugins: ['@/plugins/accessor'],
+  plugins: ['@/plugins/accessor', '@/plugins/notifications.client'],
 
   // Auto import components: https://go.nuxtjs.dev/config-components
   components: [{ path: '@/components/', pathPrefix: false }],
@@ -49,7 +49,13 @@ export default {
   ],
 
   // Axios module configuration: https://go.nuxtjs.dev/config-axios
-  axios: {},
+  axios: {
+    baseURL: 'http://localhost:3000',
+  },
+
+  server: {
+    port: 8000,
+  },
 
   // Build Configuration: https://go.nuxtjs.dev/config-build
   build: {
