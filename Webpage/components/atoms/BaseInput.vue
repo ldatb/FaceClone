@@ -14,11 +14,11 @@ export default Vue.extend({
         },
         placeholder: {
             type: String,
-            default: "Placeholder"
+            default: ""
         },
         type: {
             type: String,
-            default: "text"
+            default: ""
         }
     },
     methods: {
@@ -30,9 +30,13 @@ export default Vue.extend({
 </script>
 
 <style lang='scss' scoped>
+div {
+    background: color(white);
+    border-radius: 20px;
+}
 input {
     outline: none;
-    background: color(dark, shade1);
+    background: transparent;
     border-radius: 20px;
     min-height: 2.25rem;
     width: 100%;

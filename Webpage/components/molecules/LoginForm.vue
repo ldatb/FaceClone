@@ -2,7 +2,7 @@
     <form>
         <div class="inputs-and-password">
             <div class="form-field">
-                <BaseInput class="form-input" type="email" placeholder="E-mail" />
+                <BaseInput class="form-input" type="email" placeholder="Email" />
             </div>
             <div class="form-field">
                 <BaseInput class="form-input" type="password" placeholder="Password" />
