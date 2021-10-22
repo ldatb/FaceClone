@@ -34,7 +34,7 @@ export default Vue.extend({
         },
         lastmessage: {
             type: String,
-            required: true
+            default: '',
         },
     },
     computed: {
