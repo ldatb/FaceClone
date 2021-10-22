@@ -1,13 +1,14 @@
 <template>
-    <form @submit.prevent="onSubmit">
+    <form @submit.prevent>
         <div class="form-field">
-            <BaseInput v-model="firstname" type="text" placeholder="First Name" class="input" />
-            <BaseInput v-model="lastname" type="text" placeholder="Last Name" class="input" />
-            <BaseInput v-model="email" type="email" placeholder="Email" class="input" />
-            <BaseInput v-model="password" type="password" placeholder="Password" class="input" />
+            <BaseInput v-model="firstname" type="text" placeholder="First Name" class="form-input" />
+            <BaseInput v-model="lastname" type="text" placeholder="Last Name" class="form-input" />
+            <BaseInput v-model="email" type="email" placeholder="Email" class="form-input" />
+            <PasswordInput v-model="password" placeholder="Password" class="form-input" :class="{ 'input-error': passMatch }" />
+            <PasswordInput v-model="confirm" placeholder="Password" class="form-input" :class="{ 'input-error': passMatch }" />
         </div>
 
-        <BaseButton text="Register" class="button" />
+        <BaseButton text="Register" class="register-button" @click="submitRegister" />
     </form>
 </template>
 
@@ -20,23 +21,45 @@ export default Vue.extend({
             lastname: '',
             email: '',
             password: '',
+            confirm: '',
+            passMatch: false,
+            passtype: 'password',
+            passimageurl: 'show.png',
         }
     },
     methods: {
-        async onSubmit() {
-            try {
-                await this.$axios.$post('/users/register', {
+        async submitRegister(): Promise<void> {
+            // Check if there isn't a empty answer
+            if (this.firstname === '' || this.lastname === '' || this.email === '' || this.password === '' || this.confirm === '') {
+                return this.$notify({type: 'error', text: "Please fill in all fields", duration: 5000})
+            }
+
+            // Password and confirmation don't match
+            if (this.password !== this.confirm) {
+                this.passMatch = true
+                return this.$notify({type: 'error', text: "Passwords doesn't not match", duration: 5000})
+            } else {
+                this.passMatch = false
+            }
+
+            // Send to api
+            const response = await this.$axios.$post('/users/register', {
                     name: this.firstname,
                     lastname: this.lastname,
                     email: this.email,
                     password: this.password,
-                }).catch(error => {
-                    this.$notify({type: 'error', text: error.toString()})
-                })
+            }).catch(error => {
+                if (error.response.data.error === "user already exist") {
+                    return this.$notify({type: 'error', text: "There's already an user with this email"})
+                } else {
+                    return this.$notify({type: 'error', text: 'Oops.. something went wrong'})
+                }
+            })
 
+            // All good
+            if (response) {
                 this.$notify({type: 'success', text: 'All good! You can log in now.'})
-            } catch {
-                this.$notify({type: 'error', text: 'Oops... Something went wrong'})
+                this.$router.push({path: '/login'})
             }
         },
     }
@@ -53,7 +76,7 @@ form {
         gap: 0.6rem;
     }
 
-    .button {
+    .register-button {
         width: 100%;
         font-weight: 700;
     }
@@ -64,10 +87,14 @@ form {
         color: color(white);
     }
 
-    .input {
+    .form-input {
         width: 100% !important;
         padding: 0.1rem 1.2rem;
         background: color(dark, shade1) !important;
+    }
+
+    .input-error {
+        border: 1px solid red !important;
     }
 }
 </style>
