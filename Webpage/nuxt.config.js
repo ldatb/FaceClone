@@ -45,12 +45,25 @@ export default {
 
   // Modules: https://go.nuxtjs.dev/config-modules
   modules: [
-    '@nuxtjs/axios'
+    '@nuxtjs/axios',
+    '@nuxtjs/auth',
   ],
 
   // Axios module configuration: https://go.nuxtjs.dev/config-axios
   axios: {
     baseURL: 'http://localhost:3000',
+  },
+
+  auth: {
+    strategies: {
+      local: {
+        token: {
+          required: false,
+          global: false,
+          name: 'access_token'
+        }
+      }
+    }
   },
 
   server: {
