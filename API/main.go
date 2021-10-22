@@ -10,6 +10,7 @@ import (
 	"os"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 )
@@ -65,6 +66,15 @@ func main() {
 		log.Fatal("Error loading .env file")
 	}
 	PORT := ":" + os.Getenv("PORT")
+	HOST := os.Getenv("HOST")
+
+	// Allow CORS (development only)
+	if HOST == "localhost" {
+		app.Use(cors.New(cors.Config{
+			AllowOrigins: "http://localhost:8000",
+			AllowHeaders:  "Origin, Content-Type, Accept",
+		}))
+	}
 
 	// Fiber listen
 	log.Fatal(app.Listen(PORT))
