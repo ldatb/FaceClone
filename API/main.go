@@ -16,8 +16,16 @@ import (
 )
 
 func main() {
+	// Get environment variables
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+	PORT := ":" + os.Getenv("PORT")
+	HOST := os.Getenv("HOST")
+
 	// Try a connection to the database
-	_, err := data.CreateDBEngine()
+	_, err = data.CreateDBEngine()
 	if err != nil {
 		log.Fatal("Database Connection Error: $s", err)
 	}
@@ -28,6 +36,14 @@ func main() {
 	app.Get("/", func(ctx *fiber.Ctx) error {
 		return ctx.Send([]byte("Welcome to FaceClone!"))
 	})
+
+	// Allow CORS (development only)
+	if HOST == "localhost" {
+		app.Use(cors.New(cors.Config{
+			AllowOrigins: "http://localhost:8000",
+			AllowHeaders: "Origin, Content-Type, Accept",
+		}))
+	}
 
 	// Store user session
 	store := data.CreateStore()
@@ -59,19 +75,6 @@ func main() {
 	app.Use(func(c *fiber.Ctx) error {
 		return c.SendStatus(404)
 	})
-
-	// Get port to listen
-	err = godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env file")
-	}
-	PORT := ":" + os.Getenv("PORT")
-
-	// Allow CORS (development only)
-	app.Use(cors.New(cors.Config{
-		AllowOrigins: "http://localhost:8000",
-		AllowHeaders: "Origin, Content-Type, Accept",
-	}))
 
 	// Fiber listen
 	log.Fatal(app.Listen(PORT))
