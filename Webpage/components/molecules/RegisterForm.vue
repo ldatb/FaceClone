@@ -1,10 +1,13 @@
 <template>
-    <form>
+    <form @submit.prevent="onSubmit">
         <div class="form-field">
+            <BaseInput v-model="firstname" type="text" placeholder="First Name" class="input" />
+            <BaseInput v-model="lastname" type="text" placeholder="Last Name" class="input" />
             <BaseInput v-model="email" type="email" placeholder="Email" class="input" />
+            <BaseInput v-model="password" type="password" placeholder="Password" class="input" />
         </div>
 
-        <BaseButton text="Next step" class="button" />
+        <BaseButton text="Register" class="button" />
     </form>
 </template>
 
@@ -13,8 +16,29 @@ import Vue from 'vue'
 export default Vue.extend({
     data() {
         return {
-            email: ''
+            firstname: '',
+            lastname: '',
+            email: '',
+            password: '',
         }
+    },
+    methods: {
+        async onSubmit() {
+            try {
+                await this.$axios.$post('/users/register', {
+                    name: this.firstname,
+                    lastname: this.lastname,
+                    email: this.email,
+                    password: this.password,
+                }).catch(error => {
+                    this.$notify({type: 'error', text: error.toString()})
+                })
+
+                this.$notify({type: 'success', text: 'All good! Check your email for the verification code.'})
+            } catch {
+                this.$notify({type: 'error', text: 'Oops... Something went wrong'})
+            }
+        },
     }
 })
 </script>
@@ -22,7 +46,12 @@ export default Vue.extend({
 <style lang="scss" scoped>
 form {
     display: grid;
-    gap: 0.8rem;
+    gap: 2rem;
+
+    .form-field {
+        display: grid;
+        gap: 0.6rem;
+    }
 
     .button {
         width: 100%;
@@ -38,6 +67,7 @@ form {
     .input {
         width: 100% !important;
         padding: 0.1rem 1.2rem;
+        background: color(dark, shade1) !important;
     }
 }
 </style>
