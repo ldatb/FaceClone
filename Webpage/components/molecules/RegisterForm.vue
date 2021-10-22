@@ -34,7 +34,7 @@ export default Vue.extend({
                     this.$notify({type: 'error', text: error.toString()})
                 })
 
-                this.$notify({type: 'success', text: 'All good! Check your email for the verification code.'})
+                this.$notify({type: 'success', text: 'All good! You can log in now.'})
             } catch {
                 this.$notify({type: 'error', text: 'Oops... Something went wrong'})
             }

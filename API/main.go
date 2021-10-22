@@ -2,9 +2,9 @@ package main
 
 import (
 	"faceclone-api/data"
-	Users_router "faceclone-api/router/users"
-	Posts_router "faceclone-api/router/posts"
 	Chat_router "faceclone-api/router/chat"
+	Posts_router "faceclone-api/router/posts"
+	Users_router "faceclone-api/router/users"
 	"fmt"
 	"log"
 	"os"
@@ -66,15 +66,12 @@ func main() {
 		log.Fatal("Error loading .env file")
 	}
 	PORT := ":" + os.Getenv("PORT")
-	HOST := os.Getenv("HOST")
 
 	// Allow CORS (development only)
-	if HOST == "localhost" {
-		app.Use(cors.New(cors.Config{
-			AllowOrigins: "http://localhost:8000",
-			AllowHeaders:  "Origin, Content-Type, Accept",
-		}))
-	}
+	app.Use(cors.New(cors.Config{
+		AllowOrigins: "http://localhost:8000",
+		AllowHeaders: "Origin, Content-Type, Accept",
+	}))
 
 	// Fiber listen
 	log.Fatal(app.Listen(PORT))
