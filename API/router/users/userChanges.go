@@ -65,7 +65,7 @@ func forgot_password() fiber.Handler {
 		token, _ := utils.GenerateAuthKey()
 		newToken := &models.UserAuthToken{
 			Email:       request.Email,
-			AccessToken: token,
+			AuthToken: token,
 			TokenType:   "forgot password",
 		}
 		_, err = DBengine.Insert(newToken)

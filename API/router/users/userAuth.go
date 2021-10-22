@@ -142,7 +142,7 @@ func register(store session.Store) fiber.Handler {
 		token, _ := utils.GenerateAuthKey()
 		newToken := &models.UserAuthToken{
 			Email:       request.Email,
-			AccessToken: token,
+			AuthToken: token,
 			TokenType:   "register",
 		}
 		_, err = DBengine.Insert(newToken)

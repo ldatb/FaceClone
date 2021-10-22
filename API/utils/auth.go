@@ -28,7 +28,7 @@ func ValidateAuthKey(email string, token string) (bool, error) {
 	// Search the user token
 	// The CheckUser function is not being used because the tables are different
 	authRequest := new(models.UserAuthToken)
-	authDb, err := DBengine.Table("auth_token").Where("email = ?", email).Get(authRequest)
+	authDb, err := DBengine.Table("user_auth_token").Where("email = ?", email).Get(authRequest)
 	if err != nil {
 		return false, err
 	}
@@ -39,9 +39,9 @@ func ValidateAuthKey(email string, token string) (bool, error) {
 	}
 
 	// Compare tokens
-	if token == authRequest.AccessToken {
+	if token == authRequest.AuthToken {
 		// If it's true the token can be deleted from the database
-		_, err = DBengine.Table("auth_token").Where("email = ?", email).Delete()
+		_, err = DBengine.Table("user_auth_token").Where("email = ?", email).Delete()
 		if err != nil {
 			return true, err
 		}
