@@ -3,7 +3,7 @@ import { getModule } from 'vuex-module-decorators'
 
 import Mobile from '@/store/mobile'
 
-// eslint-disable-next-line import/no-mutable-exports
+/* eslint-disable import/no-mutable-exports */
 let mobile: Mobile
 
 const initializeStores = (store: Store<any>): void => {
