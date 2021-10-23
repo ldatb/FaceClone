@@ -383,53 +383,50 @@ func login_by_jwt() fiber.Handler {
 	}
 }
 
-
-type LogoutRequest struct {
-	Email string
-}
-
 /* This function connects a user to the database */
 func logout(store session.Store) fiber.Handler {
 	return func(c *fiber.Ctx) error {
-		// Get request
-		request := new(LogoutRequest)
-
-		if err := c.BodyParser(request); err != nil {
-			return err
-		}
-
-		// Not enough values given
-		if request.Email == "" {
-			return c.Status(fiber.StatusPartialContent).JSON(fiber.Map{
-				"error": "invalid credentials",
-			})
-		}
-
 		// Check token in header
 		token := c.Get("access_token")
 
-		// Check if user exists and token is correct
-		hasUser, validToken, userModel, DBengine, sess, err := utils.CheckUserAndToken(store, c, request.Email, token)
+		// Connect to database
+		DBengine, err := data.CreateDBEngine()
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"error": "database error",
 			})
 		}
+
+		// Search the user in the "user" table
+		userModel := new(models.User)
+		hasUser, err := DBengine.Table("user").Where("access_token = ?", token).Desc("id").Get(userModel)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"error": "database error",
+			})
+		}
+
+		// User not found (probably token is not valid)
 		if !hasUser {
-			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"error": "invalid user",
 			})
 		}
-		if !validToken {
-			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-				"error": "invalid token",
+
+		// Get store
+		sess, err := store.Get(c)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"error": "database error",
 			})
 		}
 
 		// Delete token and save
-		sess.Delete(request.Email)
+		sess.Delete(userModel.Email)
 		if err := sess.Save(); err != nil {
-			panic(err)
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"error": "database error",
+			})
 		}
 
 		// Delete session in user model
@@ -441,8 +438,6 @@ func logout(store session.Store) fiber.Handler {
 			})
 		}
 
-		return c.Status(fiber.StatusOK).JSON(fiber.Map{
-			"user":  userModel,
-		})
+		return c.SendStatus(fiber.StatusOK)
 	}
 }
