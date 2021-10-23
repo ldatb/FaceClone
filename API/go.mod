@@ -3,7 +3,7 @@ module faceclone-api
 go 1.17
 
 require (
-	github.com/gofiber/fiber/v2 v2.20.1
+	github.com/gofiber/fiber/v2 v2.20.2
 	github.com/gofiber/storage/postgres v0.0.0-20210922062006-ff033d0e0e86
 	github.com/gofiber/websocket/v2 v2.0.12
 	github.com/golang-jwt/jwt/v4 v4.1.0
@@ -28,9 +28,9 @@ require (
 	github.com/savsgio/gotils v0.0.0-20210921075833-21a6215cb0e4 // indirect
 	github.com/syndtr/goleveldb v1.0.0 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
-	github.com/valyala/fasthttp v1.30.0 // indirect
+	github.com/valyala/fasthttp v1.31.0 // indirect
 	github.com/valyala/tcplisten v1.0.0 // indirect
-	golang.org/x/sys v0.0.0-20211007075335-d3039528d8ac // indirect
+	golang.org/x/sys v0.0.0-20211023085530-d6a326fbbf70 // indirect
 	golang.org/x/tools v0.1.5 // indirect
 	gopkg.in/alexcesaro/quotedprintable.v3 v3.0.0-20150716171945-2caba252f4dc // indirect
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
