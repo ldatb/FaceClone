@@ -304,7 +304,9 @@ func change_name(store session.Store) fiber.Handler {
 		userRequest.Fullname = request.New_Name + " " + request.New_LastName
 		_, err = DBengine.ID(id).Cols("name", "lastname", "fullname").Update(userRequest)
 		if err != nil {
-			return err
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"error": "database error",
+			})
 		}
 
 		return c.Status(fiber.StatusOK).JSON(fiber.Map{
