@@ -4,12 +4,14 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/session"
 
+	"faceclone-api/data"
 	"faceclone-api/data/models"
 	"faceclone-api/utils"
 )
 
 func UserGettersRouter(app fiber.Router, store session.Store) {
 	app.Get("/user", get_user(store))
+	app.Get("/jwtuser", get_user_by_token())
 	app.Get("/get-followers", get_followers())
 	app.Get("/get-following", get_following())
 	app.Get("/get-friends", get_friends())
@@ -187,7 +189,7 @@ func get_following() fiber.Handler {
 		}
 
 		return c.Status(fiber.StatusOK).JSON(fiber.Map{
-			"user":               userModel,
+			"user":                userModel,
 			"user-following-list": userFriendsModel.Following,
 		})
 	}
@@ -222,8 +224,43 @@ func get_friends() fiber.Handler {
 		}
 
 		return c.Status(fiber.StatusOK).JSON(fiber.Map{
-			"user":               userModel,
+			"user":              userModel,
 			"user-friends-list": userFriendsModel.Friends,
+		})
+	}
+}
+
+func get_user_by_token() fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		// Get token in header
+		token := c.Get("access_token")
+
+		// Connect to database
+		DBengine, err := data.CreateDBEngine()
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"error": "database error",
+			})
+		}
+
+		// Search the user in the "user" table
+		userModel := new(models.User)
+		hasUser, err := DBengine.Table("user").Where("access_token = ?", token).Desc("id").Get(userModel)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"error": "database error",
+			})
+		}
+
+		// User not found (probably token is not valid)
+		if !hasUser {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"error": "invalid user",
+			})
+		}
+
+		return c.Status(fiber.StatusOK).JSON(fiber.Map{
+			"user": userModel,
 		})
 	}
 }
