@@ -14,8 +14,7 @@ type User struct {
 	Followers  int    `json:"followers"`
 	Following  int    `json:"following"`
 	Friends    int    `json:"friends"`
-
-
+	AccessToken string `json:"-"`
 }
 
 type UserFriends struct {

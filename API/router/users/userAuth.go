@@ -290,7 +290,7 @@ func login(store session.Store) fiber.Handler {
 		}
 
 		// Check if user exists
-		has, userRequest, _, err := utils.GetUser(request.Email)
+		has, userRequest, DBengine, err := utils.GetUser(request.Email)
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"error": "database error",
@@ -323,6 +323,15 @@ func login(store session.Store) fiber.Handler {
 
 		// Store session
 		if err := storeSession(c, store, userRequest.Email, token); err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"error": "database error",
+			})
+		}
+
+		// Store session in user model
+		userRequest.AccessToken = token
+		_, err = DBengine.ID(userRequest.Id).Cols("access_token").Update(userRequest)
+		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"error": "database error",
 			})
@@ -361,7 +370,7 @@ func logout(store session.Store) fiber.Handler {
 		token := c.Get("access_token")
 
 		// Check if user exists and token is correct
-		hasUser, validToken, userModel, _, sess, err := utils.CheckUserAndToken(store, c, request.Email, token)
+		hasUser, validToken, userModel, DBengine, sess, err := utils.CheckUserAndToken(store, c, request.Email, token)
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"error": "database error",
@@ -384,9 +393,17 @@ func logout(store session.Store) fiber.Handler {
 			panic(err)
 		}
 
+		// Delete session in user model
+		userModel.AccessToken = ""
+		_, err = DBengine.ID(userModel.Id).Cols("access_token").Update(userModel)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"error": "database error",
+			})
+		}
+
 		return c.Status(fiber.StatusOK).JSON(fiber.Map{
 			"user":  userModel,
-			"token": token,
 		})
 	}
 }
