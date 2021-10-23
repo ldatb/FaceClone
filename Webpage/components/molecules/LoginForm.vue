@@ -15,7 +15,6 @@
 
 <script lang="ts">
 import Vue from 'vue'
-import { $cookies } from '~/utils/nuxt-instance'
 export default Vue.extend({
     data() {
         return {
@@ -35,7 +34,9 @@ export default Vue.extend({
                     email: this.email,
                     password: this.password,
             }).catch(error => {
-                window.console.log(error.response.data.error)
+                if (!error.response) {
+                    return this.$notify({type: 'error', text: "Our services are currently offline, pleasy try again later"})
+                }
                 if (error.response.data.error === "invalid password") {
                     return this.$notify({type: 'error', text: "Incorrect password"})
                 } if (error.response.data.error === "invalid user") {
@@ -48,10 +49,7 @@ export default Vue.extend({
             // All good
             if (response) {
                 // Save access token
-                $cookies.set('token', response.token, {
-                    path: '/',
-                    maxAge: 60 * 60 * 24 * 30 // 30 days
-                })
+                this.$auth.setUserToken(response.token)
                 
                 // Redirect to home page
                 this.$router.push({path: '/'})
