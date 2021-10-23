@@ -1,3 +1,4 @@
+/* eslint-disable no-dupe-keys */
 export default {
   // Global page headers: https://go.nuxtjs.dev/config-head
   head: {
@@ -46,24 +47,12 @@ export default {
   // Modules: https://go.nuxtjs.dev/config-modules
   modules: [
     '@nuxtjs/axios',
-    '@nuxtjs/auth',
+    'cookie-universal-nuxt',
   ],
 
   // Axios module configuration: https://go.nuxtjs.dev/config-axios
   axios: {
     baseURL: 'http://localhost:3000',
-  },
-
-  auth: {
-    strategies: {
-      local: {
-        token: {
-          required: false,
-          global: false,
-          name: 'access_token'
-        }
-      }
-    }
   },
 
   server: {

@@ -15,6 +15,7 @@
 
 <script lang="ts">
 import Vue from 'vue'
+import { $cookies } from '~/utils/nuxt-instance'
 export default Vue.extend({
     data() {
         return {
@@ -46,11 +47,14 @@ export default Vue.extend({
 
             // All good
             if (response) {
-                // Save JWT token
+                // Save access token
+                $cookies.set('token', response.token, {
+                    path: '/',
+                    maxAge: 60 * 60 * 24 * 30 // 30 days
+                })
                 
-
-                window.console.log(response.token)
-                this.$router.push({path: '/login'})
+                // Redirect to home page
+                this.$router.push({path: '/'})
             }
         },
     }
