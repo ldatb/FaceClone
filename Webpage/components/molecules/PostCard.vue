@@ -68,7 +68,7 @@
             <div class="comment-form">
                 <form>
                     <img src="@/assets/img/profile-pic.jpg" alt="" />
-                    <ExpandableTextarea v-model="text" class="grow-wrap" placeholder="Write your comment"/>
+                    <ExpandableTextArea v-model="text" class="grow-wrap" placeholder="Write your comment"/>
                 </form>
             </div>
 
