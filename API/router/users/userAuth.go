@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"faceclone-api/data"
 	"faceclone-api/data/models"
 	"faceclone-api/utils"
 
@@ -22,6 +23,7 @@ func UserAuthRouter(app fiber.Router, store session.Store) {
 	app.Post("/register", register(store))
 	app.Put("/validate", validate())
 	app.Post("/login", login(store))
+	app.Post("/jwtlogin", login_by_jwt())
 	app.Delete("/logout", logout(store))
 }
 
@@ -344,6 +346,43 @@ func login(store session.Store) fiber.Handler {
 		})
 	}
 }
+
+/* This function loggs in a user by it's JWT token */
+func login_by_jwt() fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		// Get token in header
+		token := c.Get("access_token")
+
+		// Connect to database
+		DBengine, err := data.CreateDBEngine()
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"error": "database error",
+			})
+		}
+
+		// Search the user in the "user" table
+		userModel := new(models.User)
+		hasUser, err := DBengine.Table("user").Where("access_token = ?", token).Desc("id").Get(userModel)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"error": "database error",
+			})
+		}
+
+		// User not found (probably token is not valid)
+		if !hasUser {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"error": "invalid user",
+			})
+		}
+
+		return c.Status(fiber.StatusOK).JSON(fiber.Map{
+			"user": userModel,
+		})
+	}
+}
+
 
 type LogoutRequest struct {
 	Email string
