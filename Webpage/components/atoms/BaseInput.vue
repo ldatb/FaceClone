@@ -41,5 +41,9 @@ input {
     min-height: 2.25rem;
     width: 100%;
     padding: 0 1rem;
+    
+    &::placeholder {
+        text-justify: center;
+    }
 }
 </style>
