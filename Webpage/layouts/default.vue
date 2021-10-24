@@ -3,7 +3,6 @@
     <clientOnly>
       <notifications position="bottom center" classes="notifications" :max="1" />
     </clientOnly>
-    
     <Header />
     <Nuxt />
   </div>
