@@ -6,7 +6,7 @@
 
                 <p>Teste de Perfil</p>
 
-                <BaseButton btnlink text="Profile" link="/1" @click.native="toggleMenuActive" />
+                <BaseButton btnlink text="Profile" link="/profile" @click.native="toggleMenuActive" />
             </div>
 
             <div class="aside-links">
