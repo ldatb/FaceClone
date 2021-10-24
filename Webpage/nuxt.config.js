@@ -75,12 +75,12 @@ export default {
       }
     }
   },
-
+/*
   // This checks if there is a token set, and redirects the user either to the homepage or the login page
   router: {
     middleware: ['auth']
   },
-
+*/
   server: {
     port: 8000,
   },
