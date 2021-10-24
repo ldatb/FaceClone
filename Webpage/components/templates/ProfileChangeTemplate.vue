@@ -1,6 +1,9 @@
 <template>
     <div class="profile-template">
-        Hi
+        <HomeLeftAside />
+        <Container>
+            <Profile />
+        </Container>
     </div>
 </template>
 
