@@ -17,7 +17,7 @@ The webpage for this project was done using [Vue-Nuxt](https://nuxtjs.org/) and 
 
 ### 1.2 Webpage installation
 For specific instructions read the README.md file inside the Webpage folder
-1. Install dependencies using `npm install`
-2. Serve with host at port 3000 with `npm run dev`
-3. Run with `npm run build` and `npm run start`
-4. You can also generate a static page (not recommended since it was made with the intention of being a server-side dynamic webpage) with `npm run generate`
+1. Install dependencies using `yarn install`
+2. Serve with host at port 3000 with `yarn dev`
+3. Run with `yarn build` and `yarn start`
+4. You can also generate a static page (not recommended since it was made with the intention of being a server-side dynamic webpage) with `yarn generate`
