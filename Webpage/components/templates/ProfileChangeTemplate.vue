@@ -2,7 +2,7 @@
     <div class="profile-template">
         <HomeLeftAside />
         <Container>
-            <Profile />
+            <ProfileChange />
         </Container>
     </div>
 </template>
