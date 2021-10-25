@@ -1,21 +1,11 @@
 <template>
-    <div class="profile-container">
-        <div class="profile-avatar">
-            <div class="avatar-image">
-                <img src="@/assets/img/profile-pic.jpg">
-            </div>
-
-            <div class="avatar-info">
-                <p>Nome do Usuário</p>
-                <label for="avatar">Change profile picture</label>
-                <input id="avatar" type="file">
-            </div>
+    <div class="profile-info">
+        <div class="profile-cover">
+            <img :src="require(`@/assets/img/${coverurl}`)" class="cover-image" />
         </div>
-
-        <ProfileForm class="profile-info" />
-
-        <div class="disable-account">
-            <button>Deactivate my account temporarily</button>
+        <div class="profile-avatar">
+            <img :src="require(`@/assets/img/${avatarurl}`)" class="avatar-image" />
+            <span class="profile-name">{{ username }}</span>
         </div>
     </div>
 </template>
@@ -23,70 +13,60 @@
 <script lang="ts">
 import Vue from 'vue'
 export default Vue.extend({
-        
+    props: {
+        coverurl: {
+            type: String,
+            required: true,
+        },
+        avatarurl: {
+            type: String,
+            required: true,
+        },
+        username: {
+            type: String,
+            required: true,
+        },
+    }
 })
 </script>
 
 <style lang="scss" scoped>
-.profile-container {
+.profile-info {
     display: grid;
-    gap: 2rem;
-    background: color(dark, shade1);
-    border-radius: 24px;
-    padding: 1.4rem;
-    margin-top: 3rem;
+    grid-auto-flow: row;
 
-}
-.profile-avatar {
-    display: grid;
-    grid-template-columns: 0.5fr 1fr;
-    gap: 1rem;
-    align-items: center;
-    justify-self: center;
+    .profile-cover {
+        height: 25rem;
+        width: 100%;
 
-    .avatar-image {
-        text-align: right;
-
-        img {
-            width: 5rem;
-            border-radius: 50%;
+        .cover-image {
+            height: 100%;
+            width: 100%;
+            object-fit: cover !important;
         }
     }
 
-    .avatar-info {
-        p {
+    .profile-avatar {
+        position: absolute;
+        top: 21.5rem;
+        display: grid;
+        gap: 2.5rem;
+        grid-auto-flow: row;
+        justify-self: center;
+
+        .avatar-image {
+            width: 16rem;
+            border: 0.5rem solid color(dark);
+            border-radius: 50%;
+            justify-self: center;
+        }
+
+        .profile-name {
+            justify-self: center;
+            font-weight: 700;
+            font-size: 1.6rem;
             color: color(white);
         }
-
-        label {
-            background: none;
-            outline: none;
-            color: color(blue);
-            font-size: 14px;
-            cursor: pointer;
-        }
-
-        input {
-            display: none;
-        }
-    }
-}
-.profile-info {
-    justify-self: center;
-    width: 100% !important;
-    margin: 0 1rem 0 -1rem;
-}
-.disable-account {
-    display: grid;
-    justify-content: center;
-
-    button {
-        outline: none;
-        background: none;
-        color: color(blue);
-        font-size: 15px;
-        font-weight: 700;
-        cursor: pointer;
     }
 }
 </style>
