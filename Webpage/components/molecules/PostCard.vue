@@ -1,14 +1,14 @@
 <template>
     <div class="post-card">
         <div class="post-card-info">
-            <div class="profile-avatar">
+            <NuxtLink to="/profile" class="profile-avatar">
                 <img src="@/assets/img/profile-pic.jpg" alt="" />
 
                 <div class="profile-spam">
                     <p>User name</p>
                     <span>18:37</span>
                 </div>
-            </div>
+            </NuxtLink>
 
             <div>
                 <p class="post-text">
@@ -137,6 +137,7 @@ export default Vue.extend({
         display: grid;
         grid-template-columns: repeat(2, auto);
         gap: 1.2rem;
+        width: fit-content;
         justify-content: start;
         align-items: center;
 
