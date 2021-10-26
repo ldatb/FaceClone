@@ -10,8 +10,8 @@
             </div>
 
             <div class="aside-links">
-                <AsideLink imageurl="messenger-link.svg" text="Messenger" @click.native="toggleMenuActive"/>
-                <AsideLink imageurl="followers-link.svg" text="Followers" @click.native="toggleMenuActive"/>
+                <AsideLink imageurl="messenger-link.svg" text="Messenger" link="messenger" @click.native="toggleMenuActive"/>
+                <AsideLink imageurl="followers-link.svg" text="Followers" link="profile/followers" @click.native="toggleMenuActive"/>
                 <AsideLink imageurl="groups-link.svg" text="Groups" @click.native="toggleMenuActive"/>
                 <AsideLink imageurl="pages-link.svg" text="Pages" @click.native="toggleMenuActive"/>
                 <AsideLink imageurl="events-link.svg" text="Events" @click.native="toggleMenuActive"/>
