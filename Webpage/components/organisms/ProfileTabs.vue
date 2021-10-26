@@ -44,7 +44,6 @@ export default Vue.extend({
     grid-auto-flow: column;
     justify-content: center;
     gap: 4rem;
-    padding-top: 18rem;
 
     .active-tab {
         border-bottom: 2px solid color(blue);
