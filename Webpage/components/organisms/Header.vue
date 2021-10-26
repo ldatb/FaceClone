@@ -26,15 +26,14 @@
 
 <script lang="ts">
 import Vue from 'vue'
-export default Vue.extend({
-        
-})
+export default Vue.extend({})
 </script>
 
 <style lang="scss" scoped>
 .header-container {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
+    align-content: center;
     height: 4rem;
     background: color(dark, shade2);
     box-shadow: 0 1rem 1rem rgba(0, 0, 0, 0.25);
@@ -67,6 +66,11 @@ export default Vue.extend({
 
     .link-image {
         width: 1.4rem;
+    }
+
+    .notifications-popup {
+        background: none;
+        cursor: pointer;
     }
 }
 </style>
