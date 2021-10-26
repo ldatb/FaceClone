@@ -8,7 +8,3 @@ export default Vue.extend({
     layout: 'default'
 })
 </script>
-
-<style lang="scss" scoped>
-
-</style>
