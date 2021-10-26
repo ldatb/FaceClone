@@ -38,6 +38,7 @@ export default Vue.extend({
     .profile-cover {
         height: 25rem;
         width: 100%;
+        z-index: -1 !important;
 
         .cover-image {
             height: 100%;
@@ -47,8 +48,9 @@ export default Vue.extend({
     }
 
     .profile-avatar {
-        position: absolute;
-        top: 21.5rem;
+        position: relative;
+        z-index: -1 !important;
+        bottom: 8rem;
         display: grid;
         gap: 2.5rem;
         grid-auto-flow: row;
