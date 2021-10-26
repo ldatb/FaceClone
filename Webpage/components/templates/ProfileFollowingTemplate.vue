@@ -2,15 +2,15 @@
     <div class="profile-following-template">
         <Profile coverurl="capa.jpg" avatarurl="profile-pic.jpg" username="Teste user" />
 
-        <ProfileTabs timeline=300 followers=400 following=500 activefollowing=true />
+        <ProfileTabs timeline=300 followers=400 following=500 activefollowing />
 
         <div class="following-container">
-            <Follow avatarurl="profile-pic.jpg" name="Lucas de Ataides" username="teste123" actiontext="Unfollow"/>
-            <Follow avatarurl="profile-pic.jpg" name="Lucas de Ataides" username="teste123" actiontext="Unfollow"/>
-            <Follow avatarurl="profile-pic.jpg" name="Lucas de Ataides" username="teste123" actiontext="Unfollow"/>
-            <Follow avatarurl="profile-pic.jpg" name="Lucas de Ataides" username="teste123" actiontext="Unfollow"/>
-            <Follow avatarurl="profile-pic.jpg" name="Lucas de Ataides" username="teste123" actiontext="Unfollow"/>
-            <Follow avatarurl="profile-pic.jpg" name="Lucas de Ataides" username="teste123" actiontext="Unfollow"/>
+            <ProfileFollow avatarurl="profile-pic.jpg" name="Lucas de Ataides" username="teste123" actiontext="Unfollow"/>
+            <ProfileFollow avatarurl="profile-pic.jpg" name="Lucas de Ataides" username="teste123" actiontext="Unfollow"/>
+            <ProfileFollow avatarurl="profile-pic.jpg" name="Lucas de Ataides" username="teste123" actiontext="Unfollow"/>
+            <ProfileFollow avatarurl="profile-pic.jpg" name="Lucas de Ataides" username="teste123" actiontext="Unfollow"/>
+            <ProfileFollow avatarurl="profile-pic.jpg" name="Lucas de Ataides" username="teste123" actiontext="Unfollow"/>
+            <ProfileFollow avatarurl="profile-pic.jpg" name="Lucas de Ataides" username="teste123" actiontext="Unfollow"/>
         </div>
     </div>
 </template>
