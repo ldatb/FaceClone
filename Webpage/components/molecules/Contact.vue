@@ -1,6 +1,6 @@
 <template>
     <li class="contact">
-        <NuxtLink to="/messenger/user">
+        <NuxtLink to="/messenger">
             <div class="contact-image">
                 <img :src="require(`@/assets/img/${imageurl}`)" alt="" />
                 <StatusBadge class="status-badge" :status="getStatus" />
