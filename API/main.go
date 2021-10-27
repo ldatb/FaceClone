@@ -5,6 +5,7 @@ import (
 	Chat_router "faceclone-api/router/chat"
 	Posts_router "faceclone-api/router/posts"
 	Users_router "faceclone-api/router/users"
+	Private_router "faceclone-api/router/private"
 	"fmt"
 	"log"
 	"os"
@@ -70,6 +71,10 @@ func main() {
 	Posts_router.PostsGettersRouter(posts_group)
 	Posts_router.CommentsControlRouter(posts_group, *store)
 	Posts_router.ReactionControlRouter(posts_group, *store)
+
+	// Private router (uses JWT mainly)
+	private_group := app.Group("/private")
+	Private_router.PrivateRouter(private_group, *store)
 
 	// 404 Handler
 	app.Use(func(c *fiber.Ctx) error {
