@@ -68,9 +68,9 @@ export default {
           maxAge: 60 * 60 * 24 * 30 // 30 days
         },
         endpoints: {
-          login: { url: '/users/jwtlogin', method: 'post' },
-          logout: { url: '/users/logout', method: 'delete' },
-          user: { url: '/users/jwtuser', method: 'get' }
+          login: { url: '/private/login', method: 'post' },
+          user: { url: '/private/user', method: 'get' },
+          logout: { url: '/private/logout', method: 'delete' },
         }
       }
     }
