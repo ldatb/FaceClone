@@ -1,3 +1,4 @@
+// eslint-disable-next-line import/named
 import { Store, ActionTree } from 'vuex'
 import { initializeStores } from '@/utils/store-accessor'
 
