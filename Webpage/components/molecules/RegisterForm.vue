@@ -34,6 +34,11 @@ export default Vue.extend({
                 return this.$notify({type: 'error', text: "Please fill in all fields", duration: 5000})
             }
 
+            // Password is too short
+            if (this.password.length <= 6) {
+                return this.$notify({type: 'error', text: "Your password is too short", duration: 5000})
+            }
+
             // Password and confirmation don't match
             if (this.password !== this.confirm) {
                 this.passMatch = true
