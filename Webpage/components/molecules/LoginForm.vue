@@ -2,7 +2,7 @@
     <form @submit.prevent>
         <div class="inputs-and-password">
             <BaseInput v-model="email" type="email" placeholder="Email" class="form-input" />
-            <PasswordInput v-model="password" placeholder="Password" class="form-input" />
+            <PasswordInput v-model="password" placeholder="Password" class="form-input" :class="{'password-error': passwordError}" />
 
             <NuxtLink class="recover-button" to="/recover-password">
                 Forgot your password?
@@ -20,6 +20,7 @@ export default Vue.extend({
         return {
             email: '',
             password: '',
+            passwordError: false,
         }
     },
     methods: {
@@ -38,6 +39,7 @@ export default Vue.extend({
                     return this.$notify({type: 'error', text: "Our services are currently offline, pleasy try again later"})
                 }
                 if (error.response.data.error === "invalid password") {
+                    this.passwordError = true
                     return this.$notify({type: 'error', text: "Incorrect password"})
                 } if (error.response.data.error === "invalid user") {
                     return this.$notify({type: 'error', text: "This user does not exist"})
@@ -49,7 +51,10 @@ export default Vue.extend({
             // All good
             if (response) {
                 // Save access token
-                this.$auth.setUserToken(response.token)
+                this.$cookies.set('access_token', response.token, {
+                    path: '/',
+                    maxAge: 60 * 60 * 24 * 30 // 30 days
+                })
                 
                 // Redirect to home page
                 this.$router.push({path: '/'})
@@ -80,5 +85,8 @@ form {
 }
 .form-button {
     width: 100%;
+}
+.password-error {
+    border: 1px solid red !important;
 }
 </style>
