@@ -339,7 +339,31 @@ func change_username(store session.Store) fiber.Handler {
 		}
 
 		// Prepare username
-		new_username := strings.TrimSpace(request.New_Username)
+		new_username := strings.Replace(request.New_Username, " ", "", -1)
+		checkUsername, _, _, err := utils.GetUserByUsername(new_username)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"error": "database error",
+			})
+		}
+		
+		if checkUsername {
+			originalUsername := new_username
+			for i := 1; i != 0 ; i++ {
+				new_username = originalUsername + strconv.Itoa(i)
+
+				checkUsername, _, _, err = utils.GetUserByUsername(new_username)
+				if err != nil {
+					return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+						"error": "database error",
+					})
+				}
+
+				if !checkUsername {
+					break
+				}
+			}
+		}
 
 		// Get token in header
 		token := c.Get("access_token")

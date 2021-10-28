@@ -3,6 +3,7 @@ package User_router
 import (
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -104,6 +105,34 @@ func register(store session.Store) fiber.Handler {
 			return err
 		}
 
+		// Create username
+		username := request.Name + request.Lastname
+		username = strings.Replace(username, " ", "", -1)
+		checkUsername, _, _, err := utils.GetUserByUsername(username)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"error": "database error",
+			})
+		}
+		
+		if checkUsername {
+			originalUsername := username
+			for i := 1; i != 0 ; i++ {
+				username = originalUsername + strconv.Itoa(i)
+
+				checkUsername, _, _, err = utils.GetUserByUsername(username)
+				if err != nil {
+					return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+						"error": "database error",
+					})
+				}
+
+				if !checkUsername {
+					break
+				}
+			}
+		}
+
 		// Create and insert the new user in the database
 		avatarURL, _ := utils.CreateAvatarUrl("base_avatar.png")
 		newUser := &models.User{
@@ -111,7 +140,7 @@ func register(store session.Store) fiber.Handler {
 			Name:       request.Name,
 			Lastname:   request.Lastname,
 			Fullname:   request.Name + " " + request.Lastname,
-			Username:   strings.TrimSpace(request.Name + request.Lastname),
+			Username:   username,
 			Email:      request.Email,
 			Password:   string(hashPass),
 			AvatarFile: "base_avatar.png",
@@ -122,7 +151,9 @@ func register(store session.Store) fiber.Handler {
 		}
 		_, err = DBengine.Insert(newUser)
 		if err != nil {
-			return err
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"error": "database error",
+			})
 		}
 
 		// Create Friends table
@@ -134,7 +165,9 @@ func register(store session.Store) fiber.Handler {
 		}
 		_, err = DBengine.Insert(newFriends)
 		if err != nil {
-			return err
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"error": "database error",
+			})
 		}
 
 		// Generate and insert an auth token in the database
@@ -146,13 +179,17 @@ func register(store session.Store) fiber.Handler {
 		}
 		_, err = DBengine.Insert(newToken)
 		if err != nil {
-			return err
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"error": "database error",
+			})
 		}
 
 		// Create a JWT token
 		token, expiration, err := createJWT(*newUser)
 		if err != nil {
-			return err
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"error": "database error",
+			})
 		}
 
 		// Store session
