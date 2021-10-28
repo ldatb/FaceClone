@@ -3,7 +3,7 @@
     <clientOnly>
       <notifications position="bottom center" classes="notifications" :max="1" />
     </clientOnly>
-    <Header class="sticky-header"/>
+    <Header v-if="name" :username=username :avatarurl=avatarurl :name=name class="sticky-header"/>
     <Nuxt class="page-content"/>
   </div>
 </template>
@@ -12,10 +12,26 @@
 import Vue from 'vue'
 import { mobile } from '@/store'
 export default Vue.extend({
+  data() {
+    return {
+      username: '',
+      avatarurl: '',
+      name: '',
+    }
+  },
+  async fetch() {
+    const { data } = await this.$axios.get('/private/user')
+
+    if (data) {
+      this.username = data.user.username
+      this.avatarurl = data.user.avatar_url
+      this.name = data.user.fullname
+    }
+  },
   computed: {
     $isMenuActive() {
       return mobile.$isMenuActive
-    }
+    },
   }
 })
 </script>

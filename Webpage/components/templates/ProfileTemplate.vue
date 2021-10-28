@@ -1,16 +1,47 @@
 <template>
     <div class="profile-template">
-        <Profile coverurl="capa.jpg" avatarurl="profile-pic.jpg" username="Teste user" />
+        <Profile :avatarurl=avatarurl :name=name />
 
-        <ProfileTabs timeline=300 followers=400 following=500 activetimeline />
+        <ProfileTabs :username=username :timeline=postsquantity :followers=followers :following=following activetimeline />
 
-        <ProfileFeed class="profile-feed" />
+        <ProfileFeed class="profile-feed" :avatarurl=avatarurl :owner=owner />
     </div>
 </template>
 
 <script lang="ts">
 import Vue from 'vue'
-export default Vue.extend({})
+export default Vue.extend({
+    props: {
+        username: {
+            type: String,
+            required: true,
+        },
+        avatarurl: {
+            type: String,
+            required: true,
+        },
+        name: {
+            type: String,
+            required: true,
+        },
+        postsquantity: {
+            type: Number,
+            required: true,
+        },
+        followers: {
+            type: Number,
+            required: true,
+        },
+        following: {
+            type: Number,
+            required: true,
+        },
+        owner: {
+            type: Boolean,
+            required: true,
+        },
+    }
+})
 </script>
 
 <style lang="scss" scoped>

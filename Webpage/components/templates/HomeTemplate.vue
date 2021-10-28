@@ -1,10 +1,30 @@
 <template>
     <FullscreenContainer class="fullscreen-container">
-        <HomeLeftAside class="home-aside"/>
-        <HomeFeed class="home-feed" />
+        <HomeLeftAside class="home-aside" :avatarurl=avatarurl :name=name />
+        <HomeFeed class="home-feed" :avatarurl=avatarurl />
         <HomeRightAside class="home-aside" />
     </FullscreenContainer>
 </template>
+
+<script lang="ts">
+import Vue from 'vue'
+export default Vue.extend({
+  data() {
+    return {
+      avatarurl: '',
+      name: '',
+    }
+  },
+  async fetch() {
+    const { data } = await this.$axios.get('/private/user')
+
+    if (data) {
+      this.avatarurl = data.user.avatar_url
+      this.name = data.user.fullname
+    }
+  },
+})
+</script>
 
 <style lang="scss" scoped>
 .fullscreen-container {
