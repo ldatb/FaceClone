@@ -1,12 +1,28 @@
 <template>
     <div class="feed">
-        <NewPostForm />
+        <NewPostForm :avatarurl=avatarurl />
 
-        <div class="posts">
+        <div v-if="owner === true" class="posts">
             <PostCard />
         </div>
     </div>
 </template>
+
+<script lang="ts">
+import Vue from 'vue'
+export default Vue.extend({
+    props: {
+        avatarurl: {
+            type: String,
+            required: true,
+        },
+        owner: {
+            type: Boolean,
+            required: true,
+        },
+    }
+})
+</script>
 
 <style lang="scss" scoped>
 .feed {

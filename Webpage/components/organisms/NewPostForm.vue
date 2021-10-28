@@ -1,12 +1,12 @@
 <template>
     <form ref="postform" class="post-form" :class="{'active-form': isWritingNewPost, 'has-text': hasText}" @submit.prevent="sendPost()">
         <div class="new-post-box">
-            <img src="@/assets/img/profile-pic.jpg" alt="Profile picture">
+            <img :src=avatarurl alt="Profile picture">
             <ExpandableTextArea v-model="text" class="grow-wrap" placeholder="What are you thinking about?" @focused="isWritingNewPost = true"/>
         </div>
 
         <div v-show="false" class="uploaded-image-preview">
-            <img src="@/assets/img/profile-pic.jpg" alt="" />
+            <img src="@/assets/img/post1.png" alt="" />
         </div>
 
         <div v-show="isWritingNewPost || hasText" class="form-action">
@@ -26,6 +26,12 @@
 import Vue from 'vue'
 
 export default Vue.extend({
+    props: {
+        avatarurl: {
+            type: String,
+            required: true,
+        },
+    },
     data(): any {
         return {
             text: '',

@@ -7,7 +7,7 @@
         <SearchBar class="center-header" />
 
         <div class="right-header">
-            <ProfileBubbleHeader />
+            <ProfileBubbleHeader :username=username :name=name :avatarurl=avatarurl />
 
             <div class="header-links">
                 <NuxtLink to="/messenger">
@@ -26,7 +26,22 @@
 
 <script lang="ts">
 import Vue from 'vue'
-export default Vue.extend({})
+export default Vue.extend({
+    props: {
+        username: {
+            type: String,
+            required: true,  
+        },
+        name: {
+            type: String,
+            required: true,
+        },    
+        avatarurl: {
+            type: String,
+            required: true,
+        },
+    }
+})
 </script>
 
 <style lang="scss" scoped>

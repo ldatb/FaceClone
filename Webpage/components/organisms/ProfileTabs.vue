@@ -1,6 +1,6 @@
 <template>
     <div class="profile-tabs">
-        <ProfileTab link="/profile" text="Timeline" :number=timeline :class="{ 'active-tab': activetimeline }" />
+        <ProfileTab :link="`/profile/${username}`" text="Timeline" :number=timeline :class="{ 'active-tab': activetimeline }" />
         <ProfileTab link="/profile/followers" text="Followers" :number=followers :class="{ 'active-tab': activefollowers }" />
         <ProfileTab link="/profile/following" text="Following" :number=following :class="{ 'active-tab': activefollowing }" />
     </div>
@@ -10,6 +10,10 @@
 import Vue from 'vue'
 export default Vue.extend({
     props: {
+        username: {
+            type: String,
+            required: true,
+        },
         timeline: {
             type: Number,
             required: true,

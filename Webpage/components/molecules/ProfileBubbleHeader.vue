@@ -1,14 +1,28 @@
 <template>
-    <NuxtLink to="/profile" class="profile-bubble-container">
-        <img src="@/assets/img/profile-pic.jpg" class="profile-image">
-        <span>User name</span>
+    <NuxtLink :to="`/profile/${username}`" class="profile-bubble-container">
+        <img :src=avatarurl class="profile-image" />
+        <span v-if="name.length <= 16" :class="{ 'big-name': name.length>=10 }">{{ name }}</span>
+        <span v-else >{{ name.substring(0, 10)+"..." }}</span>
     </NuxtLink>
 </template>
 
 <script lang="ts">
 import Vue from 'vue'
 export default Vue.extend({
-        
+    props: {
+        username: {
+            type: String,
+            required: true,
+        },
+        name: {
+            type: String,
+            required: true,
+        },
+        avatarurl: {
+            type: String,
+            required: true,
+        },
+    },
 })
 </script>
 
@@ -35,5 +49,8 @@ export default Vue.extend({
         width: 2.1rem;
         border-radius: 50%;
     }
+}
+.big-name {
+    font-size: 11.5px !important;
 }
 </style>
