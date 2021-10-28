@@ -20,7 +20,7 @@ export default {
   css: ['normalize.css/normalize.css', '@/assets/scss/base.scss'],
 
   // Plugins to run before rendering page: https://go.nuxtjs.dev/config-plugins
-  plugins: ['@/plugins/accessor', '@/plugins/notifications.client'],
+  plugins: ['@/plugins/accessor', '@/plugins/notifications.client', '@/plugins/axios'],
 
   // Auto import components: https://go.nuxtjs.dev/config-components
   components: [{ path: '@/components/', pathPrefix: false }],
@@ -48,7 +48,7 @@ export default {
   modules: [
     // https://go.nuxtjs.dev/axios
     '@nuxtjs/axios',
-    '@nuxtjs/auth-next'
+    'cookie-universal-nuxt',
   ],
 
   // Axios module configuration: https://go.nuxtjs.dev/config-axios
@@ -56,31 +56,6 @@ export default {
     baseURL: 'http://localhost:3000',
   },
 
-  // Auth module: https://auth.nuxtjs.org/
-  auth: {
-    strategies: {
-      local: {
-        token: {
-          property: 'access_token',
-          global: true,
-          name: 'access_token',
-          type: '',
-          maxAge: 60 * 60 * 24 * 30 // 30 days
-        },
-        endpoints: {
-          login: { url: '/private/login', method: 'post' },
-          user: { url: '/private/user', method: 'get' },
-          logout: { url: '/private/logout', method: 'delete' },
-        }
-      }
-    }
-  },
-/*
-  // This checks if there is a token set, and redirects the user either to the homepage or the login page
-  router: {
-    middleware: ['auth']
-  },
-*/
   server: {
     port: 8000,
   },
