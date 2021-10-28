@@ -42,7 +42,6 @@ func main() {
 	if HOST == "localhost" {
 		app.Use(cors.New(cors.Config{
 			AllowOrigins: "http://localhost:8000",
-			AllowHeaders: "Origin, Content-Type, Accept",
 		}))
 	}
 
