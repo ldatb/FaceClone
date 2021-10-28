@@ -1,11 +1,11 @@
 <template>
     <div class="profile-info">
         <div class="profile-cover">
-            <img :src="require(`@/assets/img/${coverurl}`)" class="cover-image" />
+            <img src="@/assets/img/capa.jpg" class="cover-image" />
         </div>
         <div class="profile-avatar">
-            <img :src="require(`@/assets/img/${avatarurl}`)" class="avatar-image" />
-            <span class="profile-name">{{ username }}</span>
+            <img :src=avatarurl class="avatar-image" />
+            <span class="profile-name">{{ name }}</span>
         </div>
     </div>
 </template>
@@ -14,15 +14,11 @@
 import Vue from 'vue'
 export default Vue.extend({
     props: {
-        coverurl: {
-            type: String,
-            required: true,
-        },
         avatarurl: {
             type: String,
             required: true,
         },
-        username: {
+        name: {
             type: String,
             required: true,
         },
