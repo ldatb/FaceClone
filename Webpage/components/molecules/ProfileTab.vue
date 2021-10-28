@@ -1,5 +1,5 @@
 <template>
-    <NuxtLink class="profile-tab" :to="link">
+    <NuxtLink class="profile-tab" :to=link>
         <span>{{ number }}</span>
         <b>{{ text }}</b>
     </NuxtLink>
