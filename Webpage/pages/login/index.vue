@@ -5,6 +5,7 @@
 <script lang="ts">
 import Vue from 'vue'
 export default Vue.extend({
-    layout: 'blank'
+    layout: 'blank',
+    middleware: 'guest',
 })
 </script>
