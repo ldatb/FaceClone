@@ -48,3 +48,9 @@ _testmain.go
 
 # Environment
 .env
+
+# Images
+/media/chat_media/*.png
+/media/chat_media/*.jpg
+/media/post_media/*.png
+/media/post_media/*.jpg
