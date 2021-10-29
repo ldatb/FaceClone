@@ -2,8 +2,21 @@
     <div class="feed">
         <NewPostForm :avatarurl=avatarurl />
 
-        <div v-if="owner === true" class="posts">
-            <PostCard />
+        <div v-for="post in posts" :key="post.id" class="posts">
+            <PostCard
+            :username=username
+            :avatarurl=avatarurl
+            :name=name
+            :postid=post.id
+            :time=post.time
+            :description=post.description
+            :mediaurl=post.media_url
+            :likes=post.likes
+            :hearts=post.hearts
+            :laughs=post.laughs
+            :sads=post.sads
+            :angries=post.angries
+            />
         </div>
     </div>
 </template>
@@ -12,12 +25,24 @@
 import Vue from 'vue'
 export default Vue.extend({
     props: {
+        username: {
+            type: String,
+            required: true,
+        },
         avatarurl: {
+            type: String,
+            required: true,
+        },
+        name: {
             type: String,
             required: true,
         },
         owner: {
             type: Boolean,
+            required: true,
+        },
+        posts: {
+            type: Array,
             required: true,
         },
     }
