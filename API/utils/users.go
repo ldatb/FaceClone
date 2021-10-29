@@ -54,6 +54,23 @@ func GetUserByUsername(username string) (bool, *models.User, *xorm.Engine, error
 	return true, userRequest, DBengine, nil
 }
 
+func GetUserByToken(token string) (bool, *models.User, *xorm.Engine, error) {
+	// Connect to database
+	DBengine, err := data.CreateDBEngine()
+	if err != nil {
+		return false, nil, DBengine, err
+	}
+
+	// Search the user in the "user" table
+	userModel := new(models.User)
+	hasUser, err := DBengine.Table("user").Where("access_token = ?", token).Desc("id").Get(userModel)
+	if err != nil {
+		return false, userModel, DBengine, err
+	}
+
+	return hasUser, userModel, DBengine, nil
+}
+
 func CreateAvatarUrl(filename string) (string, error) {
 	// Load url from .env
 	err := godotenv.Load()
