@@ -11,12 +11,11 @@ import (
 )
 
 func ReactionControlRouter(app fiber.Router, store session.Store) {
-	app.Post("/react-post", react(store))
+	app.Post("/react", react(store))
 	app.Delete("/remove-reaction", remove_reaction(store))
 }
 
 type AddReactionRequest struct {
-	Email    string
 	PostId   string
 	Reaction string
 }
@@ -32,7 +31,7 @@ func react(store session.Store) fiber.Handler {
 		}
 
 		// Not enough values given
-		if request.Email == "" || request.PostId == "" || request.Reaction == "" {
+		if request.PostId == "" || request.Reaction == "" {
 			return c.Status(fiber.StatusPartialContent).JSON(fiber.Map{
 				"error": "invalid credentials",
 			})
@@ -41,21 +40,23 @@ func react(store session.Store) fiber.Handler {
 		// Get token in header
 		token := c.Get("access_token")
 
+		// If there's no token return
+		if token == "" {
+			return c.Status(fiber.StatusPartialContent).JSON(fiber.Map{
+				"error": "invalid token",
+			})
+		}
+
 		// Check if user exists and token is correct
-		hasUser, validToken, userModel, _, _, err := utils.CheckUserAndToken(store, c, request.Email, token)
+		hasUser, userModel, _, err := utils.GetUserByToken(token)
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"error": "database error",
 			})
 		}
 		if !hasUser {
-			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-				"error": "invalid user",
-			})
-		}
-		if !validToken {
-			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-				"error": "invalid token",
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+				"error": "invalid user or token",
 			})
 		}
 
@@ -196,7 +197,6 @@ func react(store session.Store) fiber.Handler {
 
 
 type RemoveReactionRequest struct {
-	Email    string
 	PostId   string
 }
 
@@ -211,7 +211,7 @@ func remove_reaction(store session.Store) fiber.Handler {
 		}
 
 		// Not enough values given
-		if request.Email == "" || request.PostId == "" {
+		if request.PostId == "" {
 			return c.Status(fiber.StatusPartialContent).JSON(fiber.Map{
 				"error": "invalid credentials",
 			})
@@ -219,22 +219,24 @@ func remove_reaction(store session.Store) fiber.Handler {
 
 		// Get token in header
 		token := c.Get("access_token")
+		
+		// If there's no token return
+		if token == "" {
+			return c.Status(fiber.StatusPartialContent).JSON(fiber.Map{
+				"error": "no token",
+			})
+		}
 
 		// Check if user exists and token is correct
-		hasUser, validToken, userModel, _, _, err := utils.CheckUserAndToken(store, c, request.Email, token)
+		hasUser, userModel, _, err := utils.GetUserByToken(token)
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"error": "database error",
 			})
 		}
 		if !hasUser {
-			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-				"error": "invalid user",
-			})
-		}
-		if !validToken {
-			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-				"error": "invalid token",
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+				"error": "invalid user or token",
 			})
 		}
 

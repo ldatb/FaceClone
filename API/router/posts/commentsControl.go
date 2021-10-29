@@ -3,6 +3,7 @@ package Posts_router
 import (
 	"strconv"
 
+	"faceclone-api/data"
 	"faceclone-api/data/models"
 	"faceclone-api/utils"
 
@@ -11,14 +12,14 @@ import (
 )
 
 func CommentsControlRouter(app fiber.Router, store session.Store) {
-	app.Post("/create-comment", create_comment(store))
-	app.Put("/change-comment", change_comment(store))
-	app.Delete("/delete-comment", delete_comment(store))
+	app.Post("/comments/create", create_comment(store))
+	app.Put("/comments/change", change_comment(store))
+	app.Delete("/comments/delete", delete_comment(store))
+	app.Get("/comments/get/:post_id", get_comments())
 }
 
 type CreateCommentRequest struct {
 	PostId   string
-	Email string
 	Comment  string
 }
 
@@ -33,7 +34,7 @@ func create_comment(store session.Store) fiber.Handler {
 		}
 
 		// Not enough values given
-		if request.PostId == "" || request.Email == "" || request.Comment == "" {
+		if request.PostId == "" || request.Comment == "" {
 			return c.Status(fiber.StatusPartialContent).JSON(fiber.Map{
 				"error": "invalid credentials",
 			})
@@ -42,21 +43,34 @@ func create_comment(store session.Store) fiber.Handler {
 		// Get token in header
 		token := c.Get("access_token")
 
-		// Check if user exists and token is correct
-		hasUser, validToken, userModel, _, _, err := utils.CheckUserAndToken(store, c, request.Email, token)
+		// If there's no token return
+		if token == "" {
+			return c.Status(fiber.StatusPartialContent).JSON(fiber.Map{
+				"error": "invalid token",
+			})
+		}
+
+		// Connect to database
+		DBengine, err := data.CreateDBEngine()
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"error": "database error",
 			})
 		}
-		if !hasUser {
-			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-				"error": "invalid user",
+
+		// Search the user in the "user" table
+		userModel := new(models.User)
+		hasUser, err := DBengine.Table("user").Where("access_token = ?", token).Desc("id").Get(userModel)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"error": "database error",
 			})
 		}
-		if !validToken {
-			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-				"error": "invalid token",
+
+		// User not found (probably token is not valid)
+		if !hasUser {
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+				"error": "invalid user or token",
 			})
 		}
 
@@ -104,7 +118,6 @@ func create_comment(store session.Store) fiber.Handler {
 
 type ChangeCommentRequest struct {
 	CommentId  string
-	Email   string
 	NewComment string
 }
 
@@ -119,7 +132,7 @@ func change_comment(store session.Store) fiber.Handler {
 		}
 
 		// Not enough values given
-		if request.CommentId == "" || request.Email == "" || request.NewComment == "" {
+		if request.CommentId == "" || request.NewComment == "" {
 			return c.Status(fiber.StatusPartialContent).JSON(fiber.Map{
 				"error": "invalid credentials",
 			})
@@ -128,21 +141,23 @@ func change_comment(store session.Store) fiber.Handler {
 		// Get token in header
 		token := c.Get("access_token")
 
+		// If there's no token return
+		if token == "" {
+			return c.Status(fiber.StatusPartialContent).JSON(fiber.Map{
+				"error": "no token",
+			})
+		}
+
 		// Check if user exists and token is correct
-		hasUser, validToken, userModel, _, _, err := utils.CheckUserAndToken(store, c, request.Email, token)
+		hasUser, userModel, _, err := utils.GetUserByToken(token)
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"error": "database error",
 			})
 		}
 		if !hasUser {
-			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-				"error": "invalid user",
-			})
-		}
-		if !validToken {
-			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-				"error": "invalid token",
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+				"error": "invalid user or token",
 			})
 		}
 
@@ -191,7 +206,6 @@ func change_comment(store session.Store) fiber.Handler {
 
 type DeleteCommentRequest struct {
 	CommentId string
-	Email  string
 }
 
 /* This function deletes a comment */
@@ -205,7 +219,7 @@ func delete_comment(store session.Store) fiber.Handler {
 		}
 
 		// Not enough values given
-		if request.CommentId == "" || request.Email == "" {
+		if request.CommentId == "" {
 			return c.Status(fiber.StatusPartialContent).JSON(fiber.Map{
 				"error": "invalid credentials",
 			})
@@ -214,21 +228,23 @@ func delete_comment(store session.Store) fiber.Handler {
 		// Get token in header
 		token := c.Get("access_token")
 
+		// If there's no token return
+		if token == "" {
+			return c.Status(fiber.StatusPartialContent).JSON(fiber.Map{
+				"error": "no token",
+			})
+		}
+
 		// Check if user exists and token is correct
-		hasUser, validToken, userModel, _, _, err := utils.CheckUserAndToken(store, c, request.Email, token)
+		hasUser, userModel, _, err := utils.GetUserByToken(token)
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"error": "database error",
 			})
 		}
 		if !hasUser {
-			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-				"error": "invalid user",
-			})
-		}
-		if !validToken {
-			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-				"error": "invalid token",
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+				"error": "invalid user or token",
 			})
 		}
 
@@ -269,5 +285,56 @@ func delete_comment(store session.Store) fiber.Handler {
 		}
 
 		return c.SendStatus(fiber.StatusOK)
+	}
+}
+
+/* This function gets the comments of a post */
+func get_comments() fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		// Get params
+		getPostId := c.Params("post_id")
+
+		// Not enough values given
+		if getPostId == "" {
+			return c.Status(fiber.StatusPartialContent).JSON(fiber.Map{
+				"error": "invalid credentials",
+			})
+		}
+
+		// Transform post id in int64
+		postId, err := strconv.ParseInt(getPostId, 10, 64)
+		if err != nil {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+				"error": "invalid post id",
+			})
+		}
+
+		// Check if post exists
+		hasPost, _, _, err := utils.GetPost(postId)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"error": "database error",
+			})
+		}
+		if !hasPost {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+				"error": "post not found",
+			})
+		}
+
+		// Get post comments
+		hasComments, postCommentsRequest, _, err := utils.GetPostComments(postId)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"error": "database error",
+			})
+		}
+		if !hasComments {
+			postCommentsRequest = nil
+		}
+
+		return c.Status(fiber.StatusOK).JSON(fiber.Map{
+			"comments": postCommentsRequest,
+		})
 	}
 }

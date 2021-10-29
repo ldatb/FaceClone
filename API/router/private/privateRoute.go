@@ -1,8 +1,7 @@
 package Private_router
 
 import (
-	"faceclone-api/data"
-	"faceclone-api/data/models"
+	"faceclone-api/utils"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/session"
@@ -22,32 +21,21 @@ func private_login() fiber.Handler {
 
 		// If there's no token return
 		if token == "" {
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			return c.Status(fiber.StatusPartialContent).JSON(fiber.Map{
 				"error": "invalid token",
 			})
 		}
 
-		// Connect to database
-		DBengine, err := data.CreateDBEngine()
+		// Check if user exists and token is correct
+		hasUser, userModel, _, err := utils.GetUserByToken(token)
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"error": "database error",
 			})
 		}
-
-		// Search the user in the "user" table
-		userModel := new(models.User)
-		hasUser, err := DBengine.Table("user").Where("access_token = ?", token).Desc("id").Get(userModel)
-		if err != nil {
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"error": "database error",
-			})
-		}
-
-		// User not found (probably token is not valid)
 		if !hasUser {
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"error": "invalid user",
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+				"error": "invalid user or token",
 			})
 		}
 
@@ -65,32 +53,21 @@ func get_user() fiber.Handler {
 
 		// If there's no token return
 		if token == "" {
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			return c.Status(fiber.StatusPartialContent).JSON(fiber.Map{
 				"error": "invalid token",
 			})
 		}
 
-		// Connect to database
-		DBengine, err := data.CreateDBEngine()
+		// Check if user exists and token is correct
+		hasUser, userModel, _, err := utils.GetUserByToken(token)
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"error": "database error",
 			})
 		}
-
-		// Search the user in the "user" table
-		userModel := new(models.User)
-		hasUser, err := DBengine.Table("user").Where("access_token = ?", token).Desc("id").Get(userModel)
-		if err != nil {
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"error": "database error",
-			})
-		}
-
-		// User not found (probably token is not valid)
 		if !hasUser {
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"error": "invalid user",
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+				"error": "invalid user or token",
 			})
 		}
 
@@ -110,32 +87,21 @@ func logout(store session.Store) fiber.Handler {
 
 		// If there's no token return
 		if token == "" {
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			return c.Status(fiber.StatusPartialContent).JSON(fiber.Map{
 				"error": "invalid token",
 			})
 		}
 
-		// Connect to database
-		DBengine, err := data.CreateDBEngine()
+		// Check if user exists and token is correct
+		hasUser, userModel, DBengine, err := utils.GetUserByToken(token)
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"error": "database error",
 			})
 		}
-
-		// Search the user in the "user" table
-		userModel := new(models.User)
-		hasUser, err := DBengine.Table("user").Where("access_token = ?", token).Desc("id").Get(userModel)
-		if err != nil {
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"error": "database error",
-			})
-		}
-
-		// User not found (probably token is not valid)
 		if !hasUser {
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"error": "invalid user",
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+				"error": "invalid user or token",
 			})
 		}
 

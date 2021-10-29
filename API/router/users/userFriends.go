@@ -15,7 +15,6 @@ func UserFriendsRouter(app fiber.Router, store session.Store) {
 }
 
 type FollowRequest struct {
-	Email    string
 	Username string
 }
 
@@ -28,7 +27,7 @@ func follow(store session.Store) fiber.Handler {
 		}
 
 		// Not enough values given
-		if request.Email == "" || request.Username == "" {
+		if request.Username == "" {
 			return c.Status(fiber.StatusPartialContent).JSON(fiber.Map{
 				"error": "invalid credentials",
 			})
@@ -37,21 +36,23 @@ func follow(store session.Store) fiber.Handler {
 		// Get token in header
 		token := c.Get("access_token")
 
+		// If there's no token return
+		if token == "" {
+			return c.Status(fiber.StatusPartialContent).JSON(fiber.Map{
+				"error": "no token",
+			})
+		}
+
 		// Check if user exists and token is correct
-		hasUser, validToken, userModel, DBengine, _, err := utils.CheckUserAndToken(store, c, request.Email, token)
+		hasUser, userModel, DBengine, err := utils.GetUserByToken(token)
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"error": "database error",
 			})
 		}
 		if !hasUser {
-			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-				"error": "invalid user",
-			})
-		}
-		if !validToken {
-			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-				"error": "invalid token",
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+				"error": "invalid user or token",
 			})
 		}
 
@@ -175,7 +176,7 @@ func unfollow(store session.Store) fiber.Handler {
 		}
 
 		// Not enough values given
-		if request.Email == "" || request.Username == "" {
+		if request.Username == "" {
 			return c.Status(fiber.StatusPartialContent).JSON(fiber.Map{
 				"error": "invalid credentials",
 			})
@@ -184,21 +185,23 @@ func unfollow(store session.Store) fiber.Handler {
 		// Get token in header
 		token := c.Get("access_token")
 
+		// If there's no token return
+		if token == "" {
+			return c.Status(fiber.StatusPartialContent).JSON(fiber.Map{
+				"error": "no token",
+			})
+		}
+
 		// Check if user exists and token is correct
-		hasUser, validToken, userModel, DBengine, _, err := utils.CheckUserAndToken(store, c, request.Email, token)
+		hasUser, userModel, DBengine, err := utils.GetUserByToken(token)
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"error": "database error",
 			})
 		}
 		if !hasUser {
-			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-				"error": "invalid user",
-			})
-		}
-		if !validToken {
-			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-				"error": "invalid token",
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+				"error": "invalid user or token",
 			})
 		}
 
