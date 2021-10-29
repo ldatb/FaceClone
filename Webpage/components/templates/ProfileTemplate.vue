@@ -4,7 +4,7 @@
 
         <ProfileTabs :username=username :timeline=postsquantity :followers=followers :following=following activetimeline />
 
-        <ProfileFeed class="profile-feed" :avatarurl=avatarurl :owner=owner />
+        <ProfileFeed class="profile-feed" :username=username :name=name :avatarurl=avatarurl :owner=owner :posts=posts />
     </div>
 </template>
 
@@ -38,6 +38,10 @@ export default Vue.extend({
         },
         owner: {
             type: Boolean,
+            required: true,
+        },
+        posts: {
+            type: Array,
             required: true,
         },
     }
