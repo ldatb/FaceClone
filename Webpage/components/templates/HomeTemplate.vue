@@ -1,6 +1,6 @@
 <template>
     <FullscreenContainer class="fullscreen-container">
-        <HomeLeftAside class="home-aside" :avatarurl=avatarurl :name=name />
+        <HomeLeftAside class="home-aside" :username=username :avatarurl=avatarurl :name=name />
         <HomeFeed class="home-feed" :avatarurl=avatarurl />
         <HomeRightAside class="home-aside" />
     </FullscreenContainer>
@@ -11,6 +11,7 @@ import Vue from 'vue'
 export default Vue.extend({
   data() {
     return {
+      username: '',
       avatarurl: '',
       name: '',
     }
@@ -19,6 +20,7 @@ export default Vue.extend({
     const { data } = await this.$axios.get('/private/user')
 
     if (data) {
+      this.username = data.user.username
       this.avatarurl = data.user.avatar_url
       this.name = data.user.fullname
     }
