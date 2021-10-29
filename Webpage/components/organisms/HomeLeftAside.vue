@@ -6,7 +6,7 @@
 
                 <p>{{ name }}</p>
 
-                <BaseButton btnlink text="Profile" link="/profile" @click.native="toggleMenuActive" />
+                <BaseButton btnlink text="Profile" :link="`/profile/${username}`" @click.native="toggleMenuActive" />
             </div>
 
             <div class="aside-links">
@@ -32,6 +32,10 @@ import Vue from 'vue'
 import { mobile } from '@/store'
 export default Vue.extend({
     props: {
+        username: {
+            type: String,
+            required: true,
+        },
         avatarurl: {
             type: String,
             required: true,
