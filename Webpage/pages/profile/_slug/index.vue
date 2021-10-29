@@ -8,6 +8,7 @@
         :followers=followers 
         :following=following
         :owner=owner
+        :posts=posts
         />
     </div>
 </template>
@@ -26,6 +27,7 @@ export default Vue.extend({
             followers: 0,
             following: 0,
             owner: false,
+            posts: [],
         }
     },
     async fetch() {
@@ -39,13 +41,22 @@ export default Vue.extend({
             this.following = data.user.following
         }
 
-        // Get user in private route to check if it's the same as the requested user
-        const privateResponse = await this.$axios.get('/private/user')
-        if (privateResponse) {
-            if (privateResponse.data.user.username === data.user.username) {
-                this.owner = true
+        // Get user posts
+        await this.$axios.get(`/posts/user-posts/${this.username}`).then(response => {
+            if (response.data.posts != null) {
+                this.posts = response.data.posts
+                this.postsquantity = this.posts.length
             }
-        }
-    }
+        })
+
+        // Get user in private route to check if it's the same as the requested user
+        await this.$axios.get('/private/user').then(response => {
+            if (response) {
+                if (response.data.user.username === data.user.username) {
+                    this.owner = true
+                }
+            }
+        })
+    },
 })
 </script>
