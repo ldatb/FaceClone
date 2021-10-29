@@ -1,7 +1,10 @@
 package models
 
+import "time"
+
 type Post struct {
 	Id          int64  `json:"id" validate:"required,number"`
+	Time        time.Time `json:"time" validate:"required"`
 	OwnerId     int64  `json:"-" validate:"required,number"`
 	MediaName   string `json:"media_name"`
 	MediaUrl    string `json:"media_url"`
