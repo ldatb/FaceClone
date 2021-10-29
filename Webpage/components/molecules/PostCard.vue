@@ -2,64 +2,78 @@
     <div class="post-card">
         <div class="post-card-info">
             <NuxtLink to="/profile" class="profile-avatar">
-                <img src="@/assets/img/profile-pic.jpg" alt="" />
+                <img :src=avatarurl />
 
                 <div class="profile-spam">
-                    <p>User name</p>
-                    <span>18:37</span>
+                    <p>{{ name }}</p>
+                    <span>{{ datetime }}</span>
                 </div>
             </NuxtLink>
 
             <div>
                 <p class="post-text">
-                    Lorem, ipsum dolor sit amet consectetur adipisicing elit. Laborum non
-                    labore sit nesciunt fuga fugit ut, voluptas iusto.
+                    {{ description }}
                 </p>
             </div>
         </div>
 
-        <div class="card-image">
-            <img src="@/assets/img/post1.png" alt="" />
+        <div :v-if="mediaurl != ''" class="card-image">
+            <img :src=mediaurl />
         </div>
 
         <div class="reactions-counter">
-            <div class="counter-box">
-                <img src="@/assets/img/like-icon.svg" alt="" />
-                <span>13</span>
+            <div v-if="numberlikes !== 0" :key="numberlikes" class="counter-box">
+                <img src="@/assets/img/reactions/like.svg" alt="" />
+                <span>{{ numberlikes }}</span>
             </div>
 
-            <div class="counter-box">
-                <img src="@/assets/img/heart-icon.svg" alt="" />
-                <span>08</span>
+            <div v-if="numberhearts !== 0" :key="numberhearts" class="counter-box">
+                <img src="@/assets/img/reactions/heart.svg" alt="" />
+                <span>{{ numberhearts }}</span>
+            </div>
+
+            <div v-if="numberlaughs !== 0" :key="numberlaughs" class="counter-box">
+                <img src="@/assets/img/reactions/laugh.svg" alt="" />
+                <span>{{ numberlaughs }}</span>
+            </div>
+
+            <div v-if="numbersads !== 0" :key="numbersads" class="counter-box">
+                <img src="@/assets/img/reactions/sad.svg" alt="" />
+                <span>{{ numbersads }}</span>
+            </div>
+
+            <div v-if="numberangries !== 0" :key="numberangries" class="counter-box">
+                <img src="@/assets/img/reactions/angry.svg" alt="" />
+                <span>{{ numberangries }}</span>
             </div>
         </div>
 
         <div class="post-actions">
             <div class="button-reactions">
                 <ul class="reactions">
-                    <li class="reaction-like">
-                        <img src="@/assets/img/reactions/like.svg" alt="" />
+                    <li class="reaction-like" @click="reactLike">
+                        <img src="@/assets/img/reactions/like.svg" />
                     </li>
-                    <li class="reaction-heart">
-                        <img src="@/assets/img/reactions/heart.svg" alt="" />
+                    <li class="reaction-heart" @click="reactHeart">
+                        <img src="@/assets/img/reactions/heart.svg" />
                     </li>
-                    <li class="reaction-laugh">
-                        <img src="@/assets/img/reactions/laugh.svg" alt="" />
+                    <li class="reaction-laugh" @click="reactLaugh">
+                        <img src="@/assets/img/reactions/laugh.svg" />
                     </li>
-                    <li class="reaction-sad">
-                        <img src="@/assets/img/reactions/sad.svg" alt="" />
+                    <li class="reaction-sad" @click="reactSad">
+                        <img src="@/assets/img/reactions/sad.svg" />
                     </li>
-                    <li class="reaction-angry">
-                        <img src="@/assets/img/reactions/angry.svg" alt="" />
+                    <li class="reaction-angry" @click="reactAngry">
+                        <img src="@/assets/img/reactions/angry.svg" />
                     </li>
                 </ul>
 
-                <img src="@/assets/img/thumb-icon.svg" alt="" />
-                <span>Reagir</span>
+                <img src="@/assets/img/thumb-icon.svg" />
+                <span>React</span>
             </div>
 
             <div class="button-open-comments" @click="openComments = !openComments">
-                <img src="@/assets/img/comment-icon.svg" alt="" />
+                <img src="@/assets/img/comment-icon.svg" />
                 <span>Comment</span>
             </div>
         </div>
@@ -72,7 +86,7 @@
                 </form>
             </div>
 
-            <div class="comments">
+            <!--<div class="comments">
                 <div class="comment">
                     <img src="@/assets/img/profile-pic.jpg" alt="" />
                     <div class="comment-content">
@@ -82,19 +96,7 @@
                             culpa temporibus unde doloremque eos dolore.
                         </p>
                     </div>
-                </div>
-
-                <div class="comment">
-                    <img src="@/assets/img/profile-pic.jpg" alt="" />
-                    <div class="comment-content">
-                        <span>Deborah Gomes</span>
-                        <p>
-                            Lorem ipsum dolor sit, amet consectetur adipisicing elit. Non
-                            culpa temporibus unde doloremque eos dolore.
-                        </p>
-                    </div>
-                </div>
-            </div>
+                </div>-->
 
             <div class="commments-actions">
                 <button>
@@ -110,14 +112,157 @@
 
 <script lang="ts">
 import Vue from 'vue'
-
+import axios from 'axios'
 export default Vue.extend({
+    props: {
+        username: {
+            type: String,
+            required: true,
+        },
+        avatarurl: {
+            type: String,
+            required: true,
+        },
+        name: {
+            type: String,
+            required: true,
+        },
+        postid: {
+            type: Number,
+            required: true,
+        },
+        time: {
+            type: String,
+            required: true,
+        },
+        description: {
+            type: String,
+            required: true,
+        },
+        mediaurl: {
+            type: String,
+            required: true,
+        },
+        likes: {
+            type: Number,
+            required: true,
+        },
+        hearts: {
+            type: Number,
+            required: true,
+        },
+        laughs: {
+            type: Number,
+            required: true,
+        },
+        sads: {
+            type: Number,
+            required: true,
+        },
+        angries: {
+            type: Number,
+            required: true,
+        },
+    },
     data(): any {
+        let timeTarget = "Just now"
+
+        const timeNow = Date.now()
+        const timePostInt = Date.parse(this.time)
+        let timeFromPost = timeNow - timePostInt
+        if (timeFromPost > 60000) {
+            timeFromPost = Math.floor(timeFromPost / 60000)
+            timeTarget = timeFromPost + " minutes ago"
+
+            if (timeFromPost > 60) {
+                timeFromPost = Math.floor(timeFromPost / 60)
+                timeTarget = timeFromPost + " hours ago"
+
+                if (timeFromPost > 24) {
+                    timeFromPost = Math.floor(timeFromPost / 24)
+                    timeTarget = timeFromPost + " days ago"
+
+                    if (timeFromPost > 30) {
+                        const dateTarget = new Date(timePostInt)
+                        timeTarget = dateTarget.getDay().toString() + " / " + dateTarget.getMonth().toString() + " / " + dateTarget.getFullYear().toString()
+                    }
+                }
+            }
+        }
+
         return {
             openComments: false,
             text: "",
+            datetime: timeTarget,
+            numberlikes: this.likes,
+            numberhearts: this.hearts,
+            numberlaughs: this.laughs,
+            numbersads: this.sads,
+            numberangries: this.angries,
         }
     },
+    methods: {
+        async reactLike() {
+            await axios.post("http://localhost:3000/posts/react", {
+                "postid": this.postid.toString(),
+                "reaction": "like"
+            })
+
+            this.numberlikes += 1
+            this.numberhearts = this.hearts
+            this.numberlaughs = this.laughs
+            this.numbersads = this.sads
+            this.numberangries = this.angries
+        },
+        async reactHeart() {
+            await axios.post("http://localhost:3000/posts/react", {
+                "postid": this.postid.toString(),
+                "reaction": "heart"
+            })
+
+            this.numberlikes = this.likes
+            this.numberhearts += 1
+            this.numberlaughs = this.laughs
+            this.numbersads = this.sads
+            this.numberangries = this.angries
+        },
+        async reactLaugh() {
+            await axios.post("http://localhost:3000/posts/react", {
+                "postid": this.postid.toString(),
+                "reaction": "laugh"
+            })
+
+            this.numberlikes = this.likes
+            this.numberhearts = this.hearts
+            this.numberlaughs += 1
+            this.numbersads = this.sads
+            this.numberangries = this.angries
+        },
+        async reactSad() {
+            await axios.post("http://localhost:3000/posts/react", {
+                "postid": this.postid.toString(),
+                "reaction": "sad"
+            })
+
+            this.numberlikes = this.likes
+            this.numberhearts = this.hearts
+            this.numberlaughs = this.laughs
+            this.numbersads += 1
+            this.numberangries = this.angries
+        },
+        async reactAngry() {
+            await axios.post("http://localhost:3000/posts/react", {
+                "postid": this.postid.toString(),
+                "reaction": "angry"
+            })
+
+            this.numberlikes = this.likes
+            this.numberhearts = this.hearts
+            this.numberlaughs = this.laughs
+            this.numbersads += this.sads
+            this.numberangries += 1
+        },
+    }
 })
 </script>
 
@@ -247,41 +392,42 @@ export default Vue.extend({
                     @include screen('medium', 'small') {
                     width: 2.5rem;
                     }
+
                     &:hover {
                         transform: scale(1.2);
                     }
                 }
             }
         }
+    }
 
-        &:hover .reactions {
-            visibility: visible;
+    &:hover .reactions {
+        visibility: visible;
+        opacity: 1;
+
+        li {
+            transform: scale(1);
             opacity: 1;
+        }
 
-            li {
-                transform: scale(1);
-                opacity: 1;
-            }
+        .reaction-like {
+            transition-delay: 0.04s;
+        }
 
-            .reaction-like {
-                transition-delay: 0.04s;
-            }
+        .reaction-heart {
+            transition-delay: 0.08s;
+        }
 
-            .reaction-heart {
-                transition-delay: 0.08s;
-            }
+        .reaction-laugh {
+            transition-delay: 0.12s;
+        }
 
-            .reaction-laugh {
-                transition-delay: 0.12s;
-            }
+        .reaction-sad {
+            transition-delay: 0.16s;
+        }
 
-            .reaction-sad {
-                transition-delay: 0.16s;
-            }
-
-            .reaction-angry {
-                transition-delay: 0.20s;
-            }
+        .reaction-angry {
+            transition-delay: 0.20s;
         }
     }
 }
